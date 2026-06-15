@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"/mnt/c/Users/chloe/Downloads/CoActive/ACC\")",
+      "Bash(ls -la)",
+      "Bash(ls -la \"/mnt/c/Users/chloe/Downloads/CoActive/ACC/\")"
+    ]
+  }
+}
