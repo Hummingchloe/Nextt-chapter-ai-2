@@ -6,6 +6,7 @@
 *.pem
 npm-debug.log*
 .env*
+!.env.example
 /data
 /source.docx
 /source.txt
