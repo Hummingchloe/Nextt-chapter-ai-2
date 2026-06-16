@@ -138,7 +138,11 @@ function isActive(key: string, pathname: string, sid: string): boolean {
     case "report":
       return pathname.startsWith("/reports") || pathname.startsWith("/result");
     case "note":
-      return pathname === `/next/${sid}`;
+      return (
+        pathname.startsWith(`/next/${sid}`) &&
+        !pathname.endsWith("/week") &&
+        !pathname.endsWith("/note")
+      );
     case "weekly":
       return pathname.endsWith("/week");
     default:

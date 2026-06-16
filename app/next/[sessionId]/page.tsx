@@ -6,6 +6,7 @@ import { MOOD_OPTIONS } from "@/lib/note";
 import { LogoMark, Wordmark } from "../../components/Logo";
 import TrackView from "../../components/TrackView";
 import RememberSession from "../../components/RememberSession";
+import NotesSubNav from "../../components/NotesSubNav";
 import TodayStep from "./TodayStep";
 import type { DailyNote, MoodTag } from "@/lib/types";
 
@@ -72,6 +73,8 @@ export default async function NoteHome({
       </div>
 
       <div className="mx-auto max-w-2xl space-y-8 px-6 pt-8">
+        <NotesSubNav sessionId={sessionId} />
+
         {/* Today's Next Step */}
         <TodayStep sessionId={sessionId} initialAction={action} source={source} />
 
