@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import AppTabBar from "./components/AppTabBar";
 
 export const metadata: Metadata = {
   title: "My Next Chapter AI — 내가 다시 시작할 수 있는 일의 방향 찾기",
@@ -26,7 +27,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        {children}
+        <AppTabBar />
+      </body>
     </html>
   );
 }

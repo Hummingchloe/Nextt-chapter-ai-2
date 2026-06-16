@@ -1,7 +1,6 @@
 import Link from "next/link";
 import TrackView from "./components/TrackView";
 import { LogoMark, Wordmark } from "./components/Logo";
-import AppMenu from "./components/AppMenu";
 import ReturningBanner from "./components/ReturningBanner";
 
 const painPoints = [
@@ -60,15 +59,12 @@ export default function LandingPage() {
       {/* ── Nav ─────────────────────────────────────────── */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <Wordmark />
-        <div className="flex items-center gap-3">
-          <Link
-            href="/start"
-            className="hidden rounded-full border border-line bg-surface/70 px-5 py-2 text-sm font-medium text-ink-soft transition hover:border-clay hover:text-clay sm:inline-block"
-          >
-            진단 시작하기
-          </Link>
-          <AppMenu />
-        </div>
+        <Link
+          href="/start"
+          className="hidden rounded-full border border-line bg-surface/70 px-5 py-2 text-sm font-medium text-ink-soft transition hover:border-clay hover:text-clay sm:inline-block"
+        >
+          진단 시작하기
+        </Link>
       </header>
 
       {/* ── Hero ────────────────────────────────────────── */}

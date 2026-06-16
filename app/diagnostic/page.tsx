@@ -121,9 +121,15 @@ function DiagnosticFlow() {
         body: JSON.stringify({ sessionId: sid, name, answers }),
       });
       if (!res.ok) throw new Error("complete failed");
+      const data = await res.json().catch(() => null);
       // Remember this session in the browser so a returning user can
-      // jump straight back to her result and daily log via the menu.
-      saveLocalSession(sid, name || undefined);
+      // jump straight back via the tab bar — with its direction for the
+      // report list.
+      saveLocalSession(
+        sid,
+        name || undefined,
+        data?.recommendation?.topDirection?.label,
+      );
       // Let the calming animation breathe for a moment.
       await new Promise((r) => setTimeout(r, 2600));
       router.push(`/result/${sid}`);

@@ -5,7 +5,7 @@ import { deriveTodayAction } from "@/lib/note";
 import { MOOD_OPTIONS } from "@/lib/note";
 import { LogoMark, Wordmark } from "../../components/Logo";
 import TrackView from "../../components/TrackView";
-import AppMenu from "../../components/AppMenu";
+import RememberSession from "../../components/RememberSession";
 import TodayStep from "./TodayStep";
 import type { DailyNote, MoodTag } from "@/lib/types";
 
@@ -38,13 +38,20 @@ export default async function NoteHome({
   return (
     <main className="bg-cream min-h-dvh pb-24">
       <TrackView event="note_home_viewed" meta={{ noteCount: notes.length }} />
+      <RememberSession sessionId={sessionId} name={name} direction={direction} />
+
 
       <div className="bg-warm-glow border-b border-line">
         <header className="mx-auto flex max-w-2xl items-center justify-between px-6 py-5">
           <Link href="/">
             <Wordmark />
           </Link>
-          <AppMenu sessionId={sessionId} name={name ?? undefined} />
+          <Link
+            href={`/result/${sessionId}`}
+            className="text-sm text-ink-soft underline-offset-2 transition hover:text-clay hover:underline"
+          >
+            진단 결과
+          </Link>
         </header>
         <div className="mx-auto max-w-2xl px-6 pb-8 pt-1">
           <p className="text-sm font-semibold uppercase tracking-wider text-clay">

@@ -5,7 +5,7 @@ import { reportToText } from "@/lib/report";
 import { ASSET_LABEL, USER_TYPE_LABEL } from "@/lib/engine";
 import { Wordmark } from "../../components/Logo";
 import TrackView from "../../components/TrackView";
-import AppMenu from "../../components/AppMenu";
+import RememberSession from "../../components/RememberSession";
 import ResultActions, { FollowUpCTA } from "./ResultActions";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +40,11 @@ export default async function ResultPage({
   return (
     <main className="bg-cream pb-24">
       <TrackView event="result_viewed" meta={{ topDirection: rec.topDirection.label }} />
+      <RememberSession
+        sessionId={sessionId}
+        name={name}
+        direction={r.topRecommendation.label}
+      />
 
       {/* Header band */}
       <div className="bg-warm-glow border-b border-line">
@@ -47,12 +52,9 @@ export default async function ResultPage({
           <Link href="/">
             <Wordmark />
           </Link>
-          <div className="flex items-center gap-3">
-            <span className="hidden rounded-full border border-line bg-surface/70 px-3 py-1 text-xs text-ink-soft sm:inline-block">
-              {USER_TYPE_LABEL[rec.primaryUserType]}
-            </span>
-            <AppMenu sessionId={sessionId} name={name} />
-          </div>
+          <span className="rounded-full border border-line bg-surface/70 px-3 py-1 text-xs text-ink-soft">
+            {USER_TYPE_LABEL[rec.primaryUserType]}
+          </span>
         </header>
 
         <div className="mx-auto max-w-3xl px-6 pb-12 pt-2 text-center">
