@@ -7,10 +7,9 @@
 
 import * as fileStore from "./store-file";
 import * as pgStore from "./store-pg";
+import { hasDb } from "./db-url";
 
-const usePostgres = Boolean(
-  process.env.DATABASE_URL || process.env.POSTGRES_URL,
-);
+const usePostgres = hasDb();
 
 const impl = usePostgres ? pgStore : fileStore;
 

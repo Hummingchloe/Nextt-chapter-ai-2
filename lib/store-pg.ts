@@ -9,21 +9,20 @@
 // ─────────────────────────────────────────────────────────────
 
 import postgres from "postgres";
+import { resolveDbUrl } from "./db-url";
 import type { AnalyticsEvent, DiagnosticSession } from "./types";
-
-const CONN =
-  process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
 
 // Lazy singleton — never connects at import time (so the file store
 // can stay the default when no DB is configured).
 let _sql: ReturnType<typeof postgres> | null = null;
 function sql() {
   if (!_sql) {
-    _sql = postgres(CONN, {
+    _sql = postgres(resolveDbUrl(), {
       // Neon/Vercel poolers (pgbouncer) don't support prepared statements.
       prepare: false,
       max: 1,
       idle_timeout: 20,
+      ssl: "require",
     });
   }
   return _sql;
