@@ -11,6 +11,7 @@ import {
 } from "@/lib/questions";
 import { track } from "@/lib/track";
 import { saveLocalSession } from "@/lib/session-client";
+import { PERSONAS, TEST_TOOLS_ENABLED, type Persona } from "@/lib/personas";
 
 export default function DiagnosticPage() {
   return (
@@ -43,10 +44,12 @@ function DiagnosticFlow() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [textValue, setTextValue] = useState("");
   const [phase, setPhase] = useState<"flow" | "processing">("flow");
+  const [demoId, setDemoId] = useState(PERSONAS[0].id);
   const advancing = useRef(false);
 
   const question = QUESTIONS[qIndex];
   const total = QUESTIONS.length;
+  const demo: Persona = PERSONAS.find((p) => p.id === demoId) ?? PERSONAS[0];
 
   // Guard: no session → back to start.
   useEffect(() => {
@@ -111,14 +114,34 @@ function DiagnosticFlow() {
     goNext(q.key);
   }
 
-  async function complete() {
+  // Test helper: fill every answer from a persona, then complete.
+  async function fillWithPersona(p: Persona) {
+    setAnswers(p.answers);
+    await Promise.all(
+      Object.entries(p.answers).map(([key, value]) =>
+        fetch("/api/response", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ sessionId: sid, key, value }),
+        }).catch(() => null),
+      ),
+    );
+    await complete(p.answers, p.name);
+  }
+
+  async function complete(
+    answersOverride?: Record<string, string>,
+    nameOverride?: string,
+  ) {
+    const finalAnswers = answersOverride ?? answers;
+    const finalName = nameOverride || name;
     setPhase("processing");
     track("processing_viewed", undefined, sid);
     try {
       const res = await fetch("/api/complete", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sessionId: sid, name, answers }),
+        body: JSON.stringify({ sessionId: sid, name: finalName, answers: finalAnswers }),
       });
       if (!res.ok) throw new Error("complete failed");
       const data = await res.json().catch(() => null);
@@ -127,7 +150,7 @@ function DiagnosticFlow() {
       // report list.
       saveLocalSession(
         sid,
-        name || undefined,
+        finalName || undefined,
         data?.recommendation?.topDirection?.label,
       );
       // Let the calming animation breathe for a moment.
@@ -148,6 +171,33 @@ function DiagnosticFlow() {
 
   return (
     <main className="flex min-h-dvh flex-col bg-cream">
+      {/* Test helper bar — fills the flow with a sample persona */}
+      {TEST_TOOLS_ENABLED && (
+        <div className="border-b border-clay/20 bg-clay-tint/40">
+          <div className="mx-auto flex max-w-2xl flex-wrap items-center gap-2 px-5 py-2 text-sm">
+            <span className="font-medium text-clay-deep">🧪 테스트 예시</span>
+            <select
+              value={demoId}
+              onChange={(e) => setDemoId(e.target.value)}
+              className="rounded-full border border-clay/30 bg-surface px-3 py-1 text-ink outline-none"
+              aria-label="예시 페르소나 선택"
+            >
+              {PERSONAS.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.emoji} {p.name} · {p.type}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => fillWithPersona(demo)}
+              className="ml-auto rounded-full bg-clay px-4 py-1.5 font-medium text-white transition hover:bg-clay-deep"
+            >
+              전체 채우고 결과 보기 →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <header className="sticky top-0 z-10 border-b border-line/70 bg-cream/85 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center gap-4 px-5 py-4">
@@ -197,7 +247,18 @@ function DiagnosticFlow() {
 
             <div className="mt-8 flex-1">
               {question.type === "single" ? (
-                <div className="grid gap-3">
+                <>
+                  {TEST_TOOLS_ENABLED && demo.answers[question.key] && (
+                    <button
+                      onClick={() =>
+                        handleSelect(question, demo.answers[question.key]!)
+                      }
+                      className="mb-3 self-start rounded-full border border-clay/30 bg-clay-tint/40 px-3 py-1 text-xs font-medium text-clay-deep transition hover:bg-clay-tint"
+                    >
+                      🧪 예시 넣기
+                    </button>
+                  )}
+                  <div className="grid gap-3">
                   {question.options!.map((opt) => {
                     const selected = answers[question.key] === opt.id;
                     return (
@@ -223,9 +284,20 @@ function DiagnosticFlow() {
                       </button>
                     );
                   })}
-                </div>
+                  </div>
+                </>
               ) : (
                 <div className="flex h-full flex-col">
+                  {TEST_TOOLS_ENABLED && demo.answers[question.key] && (
+                    <button
+                      onClick={() =>
+                        setTextValue(demo.answers[question.key] ?? "")
+                      }
+                      className="mb-2 self-end rounded-full border border-clay/30 bg-clay-tint/40 px-3 py-1 text-xs font-medium text-clay-deep transition hover:bg-clay-tint"
+                    >
+                      🧪 예시 넣기
+                    </button>
+                  )}
                   <textarea
                     value={textValue}
                     onChange={(e) => setTextValue(e.target.value)}

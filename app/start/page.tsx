@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogoMark, Wordmark } from "../components/Logo";
 import { track, detectDevice } from "@/lib/track";
+import { saveLocalSession } from "@/lib/session-client";
+import { PERSONAS, TEST_TOOLS_ENABLED } from "@/lib/personas";
 
 const reassurances = [
   { icon: "🌿", t: "시험이 아니에요", d: "정답을 맞히는 게 아니라, 가능성을 찾는 시간이에요." },
@@ -20,6 +22,38 @@ export default function StartPage() {
   useEffect(() => {
     track("start_viewed");
   }, []);
+
+  // Test helper: create a session, fill it with a sample persona, and
+  // jump straight to the report — for quickly reviewing many results.
+  async function runPersona(personaId: string) {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const p = PERSONAS.find((x) => x.id === personaId)!;
+      const res = await fetch("/api/session", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ device: detectDevice(), name: p.name }),
+      });
+      const { sessionId } = await res.json();
+      const c = await fetch("/api/complete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sessionId, name: p.name, answers: p.answers }),
+      });
+      const data = await c.json().catch(() => null);
+      track("persona_quickrun", { persona: personaId }, sessionId);
+      saveLocalSession(
+        sessionId,
+        p.name,
+        data?.recommendation?.topDirection?.label,
+      );
+      router.push(`/result/${sessionId}`);
+    } catch {
+      setLoading(false);
+      alert("예시를 불러오는 중 문제가 있었어요. 다시 시도해 주세요.");
+    }
+  }
 
   async function begin() {
     if (loading) return;
@@ -110,6 +144,39 @@ export default function StartPage() {
           <p className="mt-3 text-center text-sm text-ink-faint">
             가입 없이 바로 시작해요.
           </p>
+
+          {TEST_TOOLS_ENABLED && (
+            <div className="mt-7 rounded-2xl border border-dashed border-clay/30 bg-clay-tint/30 p-4">
+              <p className="text-sm font-semibold text-clay-deep">
+                🧪 테스트용 빠른 체험
+              </p>
+              <p className="mt-1 text-xs text-ink-soft">
+                예시 페르소나를 누르면 진단을 자동으로 채우고 바로 결과 리포트로
+                넘어가요.
+              </p>
+              <div className="mt-3 grid gap-2">
+                {PERSONAS.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => runPersona(p.id)}
+                    disabled={loading}
+                    className="flex items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5 text-left transition hover:border-clay disabled:opacity-60"
+                  >
+                    <span className="text-lg">{p.emoji}</span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-ink">
+                        {p.name} · {p.type}
+                      </span>
+                      <span className="block truncate text-xs text-ink-soft">
+                        {p.summary}
+                      </span>
+                    </span>
+                    <span className="ml-auto text-clay">→</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </main>
