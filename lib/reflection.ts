@@ -122,8 +122,18 @@ const MOOD_FLOW_NOTE: Partial<Record<MoodTag, string>> = {
 export function buildWeeklyReflection(
   notes: DailyNote[],
   direction?: string,
+  opts?: { windowDays?: number; label?: string },
 ): WeeklyReflection {
-  const recent = notes.slice(-7);
+  const windowDays = opts?.windowDays ?? 7;
+  const label = opts?.label ?? "이번 주";
+  const today = Math.floor(Date.now() / 86_400_000);
+  const recent = notes.filter((n) => {
+    if (!n.date) return false;
+    const d = Math.floor(
+      new Date(`${n.date}T00:00:00Z`).getTime() / 86_400_000,
+    );
+    return d > today - windowDays && d <= today;
+  });
   const count = recent.length;
 
   const actions = recent.map((n) => clean(n.todayAction)).filter(Boolean);
@@ -141,14 +151,11 @@ export function buildWeeklyReflection(
   // flow line scales with engagement (spec: 4+ / 2-3 / 1 / 0)
   let flow: string;
   if (count >= 4) {
-    flow =
-      "이번 주는 작은 움직임이 반복되며 흐름이 생기기 시작한 주였어요. 아직 완성된 건 없어도, 막연한 아이디어가 실제 사람과 문제에 닿기 시작했어요.";
+    flow = `${label}의 흐름을 보면, 작은 움직임이 반복되며 흐름이 생기기 시작했어요. 막연한 아이디어가 실제 사람과 문제에 닿기 시작했어요.`;
   } else if (count >= 2) {
-    flow =
-      "이번 주는 크게 나아갔다기보다, 흐름을 잃지 않고 붙잡고 있던 주에 가까워요. 작지만 반복이 있었다는 게 중요해요.";
+    flow = `${label}의 흐름을 보면, 크게 나아갔다기보다 흐름을 잃지 않고 붙잡고 있었어요. 작지만 반복이 있었다는 게 중요해요.`;
   } else {
-    flow =
-      "이번 주는 다시 들어오기 위해 멈춰 선 주에 가까웠어요. 기록을 한 번이라도 남긴 건, 흐름이 아직 살아 있다는 신호예요.";
+    flow = `${label}의 흐름을 보면, 다시 들어오기 위해 멈춰 선 시간에 가까웠어요. 기록을 한 번이라도 남긴 건, 흐름이 아직 살아 있다는 신호예요.`;
   }
   if (direction) {
     flow += ` (지금 향하는 방향: ${direction})`;
@@ -198,13 +205,12 @@ export function buildWeeklyReflection(
   // smallest focus action
   let focusAction: string;
   if (voices.length) {
-    focusAction =
-      "이번 주에 가장 자주 나온 문제 1개를 “내가 도울 수 있는 가장 구체적인 상황”으로 한 줄 적어보세요.";
+    focusAction = `${label}에 가장 자주 나온 문제 1개를 “내가 도울 수 있는 가장 구체적인 상황”으로 한 줄 적어보세요.`;
   } else if (count >= 2) {
     focusAction = "지인 1명에게 같은 질문을 한 번 더 해보세요.";
   } else {
     focusAction =
-      "다음 주에는 도와주고 싶은 사람 한 유형만 적어보세요. 설명은 아직 없어도 괜찮아요.";
+      "다음에는 도와주고 싶은 사람 한 유형만 적어보세요. 설명은 아직 없어도 괜찮아요.";
   }
 
   return {
@@ -217,4 +223,24 @@ export function buildWeeklyReflection(
     focusAction,
     noteCount: count,
   };
+}
+
+export type ReflectionPeriod = "week" | "month" | "quarter";
+
+const PERIOD_MAP: Record<
+  ReflectionPeriod,
+  { windowDays: number; label: string }
+> = {
+  week: { windowDays: 7, label: "이번 주" },
+  month: { windowDays: 30, label: "이번 달" },
+  quarter: { windowDays: 92, label: "이번 분기" },
+};
+
+// 주/월/분기 회고 (S6) — 같은 로직을 기간 창으로 일반화.
+export function buildPeriodReflection(
+  notes: DailyNote[],
+  direction: string | undefined,
+  period: ReflectionPeriod,
+): WeeklyReflection {
+  return buildWeeklyReflection(notes, direction, PERIOD_MAP[period]);
 }

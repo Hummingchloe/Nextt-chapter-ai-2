@@ -17,17 +17,21 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
+  const periodParam = searchParams.get("period");
+  const period =
+    periodParam === "month" || periodParam === "quarter" ? periodParam : "week";
+
   const notes = await listNotes(sessionId);
   const direction = session.report?.topRecommendation.label;
-  const weekly = await weeklyReflectionAI(notes, direction);
+  const weekly = await weeklyReflectionAI(notes, direction, period);
 
   await logEvent({
     id: `e_${Date.now()}_${Math.round(Math.random() * 1e6)}`,
     sessionId,
     type: "weekly_viewed",
-    meta: { noteCount: notes.length },
+    meta: { noteCount: notes.length, period },
     at: new Date().toISOString(),
   });
 
-  return NextResponse.json({ weekly, noteCount: notes.length });
+  return NextResponse.json({ weekly, noteCount: notes.length, period });
 }

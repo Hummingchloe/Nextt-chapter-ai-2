@@ -14,10 +14,14 @@ export default function WeekPage({
   const { sessionId } = use(params);
   const [weekly, setWeekly] = useState<WeeklyReflection | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [period, setPeriod] = useState<"week" | "month" | "quarter">("week");
 
   useEffect(() => {
-    track("weekly_viewed", undefined, sessionId);
-    fetch(`/api/week?sessionId=${encodeURIComponent(sessionId)}`)
+    track("weekly_viewed", { period }, sessionId);
+    setState("loading");
+    fetch(
+      `/api/week?sessionId=${encodeURIComponent(sessionId)}&period=${period}`,
+    )
       .then((r) => r.json())
       .then((d) => {
         if (d.weekly) {
@@ -26,7 +30,7 @@ export default function WeekPage({
         } else setState("error");
       })
       .catch(() => setState("error"));
-  }, [sessionId]);
+  }, [sessionId, period]);
 
   return (
     <main className="bg-cream min-h-dvh pb-24">
@@ -58,6 +62,27 @@ export default function WeekPage({
       </div>
 
       <div className="mx-auto max-w-2xl px-6 pt-8">
+        {/* 기간 탭 (S6 주/월/분기) */}
+        <div className="mb-6 flex gap-1 rounded-full border border-line bg-cream-2 p-1">
+          {[
+            { k: "week", l: "주간" },
+            { k: "month", l: "월간" },
+            { k: "quarter", l: "분기" },
+          ].map((t) => (
+            <button
+              key={t.k}
+              onClick={() => setPeriod(t.k as "week" | "month" | "quarter")}
+              className={`flex-1 rounded-full py-2 text-center text-sm font-medium transition ${
+                period === t.k
+                  ? "bg-surface text-sage shadow-sm"
+                  : "text-ink-soft hover:text-sage"
+              }`}
+            >
+              {t.l}
+            </button>
+          ))}
+        </div>
+
         {state === "loading" && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="relative mb-6 h-16 w-16">

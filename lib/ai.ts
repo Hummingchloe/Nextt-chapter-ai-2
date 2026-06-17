@@ -11,7 +11,11 @@
 // ─────────────────────────────────────────────────────────────
 
 import { reportToText } from "./report";
-import { buildDailyReflection, buildWeeklyReflection } from "./reflection";
+import {
+  buildDailyReflection,
+  buildPeriodReflection,
+  type ReflectionPeriod,
+} from "./reflection";
 import { MOOD_LABEL } from "./note";
 import type {
   DailyNote,
@@ -192,13 +196,21 @@ const WEEKLY_SYSTEM = [
 export async function weeklyReflectionAI(
   notes: DailyNote[],
   direction?: string,
+  period: ReflectionPeriod = "week",
 ): Promise<WeeklyReflection> {
-  const base = buildWeeklyReflection(notes, direction);
+  const base = buildPeriodReflection(notes, direction, period);
   if (!aiEnabled()) return base;
 
-  const recent = notes.slice(-7);
+  const windowDays = period === "quarter" ? 92 : period === "month" ? 30 : 7;
+  const label = period === "quarter" ? "이번 분기" : period === "month" ? "이번 달" : "이번 주";
+  const today = Math.floor(Date.now() / 86_400_000);
+  const recent = notes.filter((n) => {
+    if (!n.date) return false;
+    const d = Math.floor(new Date(`${n.date}T00:00:00Z`).getTime() / 86_400_000);
+    return d > today - windowDays && d <= today;
+  });
   const user = [
-    "아래 지난 7일 기록을 바탕으로 주간 Reflection을 JSON으로 작성하세요.",
+    `아래 ${label} 기록을 바탕으로 회고를 JSON으로 작성하세요. (기간: ${label})`,
     `• 추천받은 방향: ${direction ?? "(미정)"}`,
     `• 기록 횟수: ${recent.length}`,
     ...recent.map(

@@ -144,6 +144,10 @@ export default function StartPage() {
           <p className="mt-3 text-center text-sm text-ink-faint">
             가입 없이 바로 시작해요.
           </p>
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-ink-faint">
+            <span>🔒</span>
+            당신이 적은 이야기는 방향을 찾는 데만 쓰여요. 회사에 파는 일은 없어요.
+          </p>
 
           {TEST_TOOLS_ENABLED && (
             <div className="mt-7 rounded-2xl border border-dashed border-clay/30 bg-clay-tint/30 p-4">

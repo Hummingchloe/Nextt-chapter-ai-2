@@ -345,7 +345,12 @@ export default function LandingPage() {
       <footer className="border-t border-line bg-cream-2">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-ink-faint sm:flex-row">
           <Wordmark />
-          <p>내가 다시 시작할 수 있는 일의 방향을 찾는 가장 작은 첫걸음.</p>
+          <div className="text-center sm:text-right">
+            <p>내가 다시 시작할 수 있는 일의 방향을 찾는 가장 작은 첫걸음.</p>
+            <p className="mt-1 text-xs">
+              🔒 당신이 적은 이야기는 방향을 찾는 데만 쓰여요. 회사에 파는 일은 없어요.
+            </p>
+          </div>
         </div>
       </footer>
     </main>

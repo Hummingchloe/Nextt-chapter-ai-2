@@ -4,6 +4,7 @@ import { getSession, listNotes } from "@/lib/store";
 import { deriveTodayAction } from "@/lib/note";
 import { computeMomentum, momentumCopy } from "@/lib/momentum";
 import { computeProgress } from "@/lib/progress";
+import { buildCompass, buildRoadmap, todaysPick } from "@/lib/compass-summary";
 import { buildTimeline } from "@/lib/timeline";
 import { Wordmark } from "../../components/Logo";
 import TrackView from "../../components/TrackView";
@@ -24,14 +25,14 @@ export default async function HomeDashboard({
   const notes = await listNotes(sessionId);
   const name = session.name;
   const direction = session.report?.topRecommendation.label;
-  const directionWhy = session.report?.directions.find(
-    (d) => d.label === direction,
-  )?.why;
   const { action } = deriveTodayAction(session.report?.firstAction, notes);
   const m = computeMomentum(notes);
   const copy = momentumCopy(m);
   const p = computeProgress(session, notes);
   const report = session.report;
+  const compass = buildCompass(session, notes);
+  const roadmap = buildRoadmap(session.recommendation?.topDirection.id);
+  const pick = todaysPick(report);
   const lastNote = notes.length ? notes[notes.length - 1] : undefined;
   const timeline = buildTimeline(session, notes);
   const latestEvent = timeline.length ? timeline[timeline.length - 1] : undefined;
@@ -64,25 +65,42 @@ export default async function HomeDashboard({
       </div>
 
       <div className="mx-auto max-w-2xl space-y-5 px-6 pt-8">
-        {/* 1. Direction reminder */}
-        {direction && (
-          <Link
-            href={`/result/${sessionId}`}
-            className="block rounded-3xl border border-line bg-surface p-6 shadow-sm transition hover:shadow-soft"
-          >
-            <p className="text-xs font-semibold uppercase tracking-wide text-clay">
-              지금 당신의 방향
-            </p>
-            <p className="mt-2 font-display text-xl font-bold text-ink">
-              {direction}
-            </p>
-            {directionWhy && (
-              <p className="mt-1 text-sm leading-relaxed text-ink-soft">
-                {directionWhy}
-              </p>
+        {/* 1. 내 컴퍼스 (입력할수록 또렷해짐) */}
+        <div className="rounded-3xl border border-clay/30 bg-surface p-6 shadow-soft">
+          <p className="text-xs font-semibold uppercase tracking-wide text-clay">
+            내 컴퍼스
+          </p>
+          <p className="mt-2 font-display text-[1.05rem] font-bold leading-relaxed text-ink">
+            {compass.oneLine}
+          </p>
+          <div className="mt-4 space-y-2 text-sm">
+            <CompassRow label="정체성" value={compass.identity} />
+            <CompassRow label="원하는 것" value={compass.wants} />
+            <CompassRow label="지금 상황" value={compass.situation} />
+            {compass.blockers.length > 0 && (
+              <CompassRow label="막힌 지점" value={compass.blockers.join(" · ")} />
             )}
-            <p className="mt-3 text-sm text-clay">결과 다시 보기 →</p>
-          </Link>
+          </div>
+          {direction && (
+            <Link
+              href={`/result/${sessionId}`}
+              className="mt-4 inline-block text-sm font-medium text-clay"
+            >
+              방향: {direction} · 결과 보기 →
+            </Link>
+          )}
+        </div>
+
+        {/* 오늘의 추천 (매일 회전) */}
+        {pick && (
+          <div className="rounded-3xl border border-line bg-surface p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-sage">
+              {pick.category} · 오늘
+            </p>
+            <p className="mt-2 leading-relaxed text-ink">
+              {pick.icon} {pick.text}
+            </p>
+          </div>
         )}
 
         {/* 2. Today's action */}
@@ -127,6 +145,41 @@ export default async function HomeDashboard({
             <p className="mt-3 text-sm text-clay">리포트에서 더 보기 →</p>
           </Link>
         )}
+
+        {/* 성장 로드맵 (단기·중기) */}
+        <div className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-clay">
+            성장 로드맵
+          </p>
+          <div className="mt-3 space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-ink">
+                이번 주 ~ 한 달
+              </p>
+              <ul className="mt-1.5 space-y-1.5">
+                {roadmap.shortTerm.map((s, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-ink-soft">
+                    <span className="text-clay">○</span>
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="border-t border-line pt-3">
+              <p className="text-sm font-semibold text-ink-faint">
+                이번 분기
+              </p>
+              <ul className="mt-1.5 space-y-1.5">
+                {roadmap.midTerm.map((s, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-ink-soft">
+                    <span className="text-ink-faint">○</span>
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
 
         {/* 3. 방향 선명도 (컴퍼스) + 레벨·XP·스트릭 */}
         <div className="rounded-3xl border border-line bg-surface p-6 shadow-sm">
@@ -278,5 +331,14 @@ export default async function HomeDashboard({
         </p>
       </div>
     </main>
+  );
+}
+
+function CompassRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex gap-2">
+      <span className="w-16 shrink-0 text-ink-faint">{label}</span>
+      <span className="text-ink">{value}</span>
+    </div>
   );
 }
