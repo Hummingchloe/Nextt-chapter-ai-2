@@ -5,7 +5,9 @@ import { deriveTodayAction } from "@/lib/note";
 import { computeMomentum, momentumCopy } from "@/lib/momentum";
 import { computeProgress } from "@/lib/progress";
 import { buildCompass, buildRoadmap, todaysPick } from "@/lib/compass-summary";
+import { buildExpertLens } from "@/lib/expert-lens";
 import { buildTimeline } from "@/lib/timeline";
+import ExpertLensCard from "../../components/ExpertLensCard";
 import { Wordmark } from "../../components/Logo";
 import TrackView from "../../components/TrackView";
 import RememberSession from "../../components/RememberSession";
@@ -33,6 +35,7 @@ export default async function HomeDashboard({
   const compass = buildCompass(session, notes);
   const roadmap = buildRoadmap(session.recommendation?.topDirection.id);
   const pick = todaysPick(report);
+  const lens = buildExpertLens(session, notes);
   const lastNote = notes.length ? notes[notes.length - 1] : undefined;
   const timeline = buildTimeline(session, notes);
   const latestEvent = timeline.length ? timeline[timeline.length - 1] : undefined;
@@ -121,6 +124,9 @@ export default async function HomeDashboard({
             </Link>
           </div>
         </div>
+
+        {/* 전문가 렌즈 — 막힘을 뚫는 관점 + 아웃리치 초안 */}
+        <ExpertLensCard lens={lens} sessionId={sessionId} />
 
         {/* 2.5 이런 것도 해보면 좋아요 (공부·사람·도구) */}
         {(report?.whatToLearn?.length ||

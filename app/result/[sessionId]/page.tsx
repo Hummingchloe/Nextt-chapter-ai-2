@@ -6,6 +6,8 @@ import { ASSET_LABEL, USER_TYPE_LABEL } from "@/lib/engine";
 import { Wordmark } from "../../components/Logo";
 import TrackView from "../../components/TrackView";
 import RememberSession from "../../components/RememberSession";
+import ExpertLensCard from "../../components/ExpertLensCard";
+import { buildExpertLens } from "@/lib/expert-lens";
 import ResultActions, { FollowUpCTA } from "./ResultActions";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +38,7 @@ export default async function ResultPage({
   const rec = session.recommendation;
   const name = session.name;
   const reportText = reportToText(r, name);
+  const lens = buildExpertLens(session, session.notes ?? []);
 
   return (
     <main className="bg-cream pb-24">
@@ -217,6 +220,11 @@ export default async function ResultPage({
             </div>
           </Section>
         )}
+
+        {/* 전문가 렌즈 — 막힘을 뚫는 관점 */}
+        <Section index="08" title="전문가 렌즈">
+          <ExpertLensCard lens={lens} sessionId={sessionId} />
+        </Section>
 
         {/* 마지막 한마디 */}
         <div className="rounded-3xl bg-ink px-8 py-10 text-center">
