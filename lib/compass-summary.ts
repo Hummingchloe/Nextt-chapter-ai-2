@@ -8,8 +8,8 @@
 // both reusing the report we already generate.
 // ─────────────────────────────────────────────────────────────
 
-import { computeProgress } from "./progress";
 import { computeMomentum } from "./momentum";
+import { analyzeIdentityCompass, type CompassAnalysis } from "./identity-compass-engine";
 import type {
   DailyNote,
   DiagnosticSession,
@@ -24,6 +24,14 @@ export interface Compass {
   direction?: string; // 방향
   clarity: number; // 선명도 %
   oneLine: string; // 한 문장 요약
+  alignment: number; // M 정렬도, 0..1
+  confidence: number; // H confidence, 0..1
+  coreValues: string[];
+  antiValues: string[];
+  offerReadiness: CompassAnalysis["offer"]["readiness"];
+  offerConfidence: number;
+  offerQuestion?: string;
+  adaptiveQuestions: string[];
 }
 
 const STYLE: Record<string, string> = {
@@ -63,53 +71,56 @@ export function buildCompass(
   notes: DailyNote[],
 ): Compass {
   const a = session.answers;
-  const p = computeProgress(session, notes);
   const m = computeMomentum(notes);
+  const analysis = analyzeIdentityCompass(session, notes);
 
-  // 정체성
+  // 정체성: Identity Compass H one-liner가 source of truth.
   const style = STYLE[a.work_style] ?? "당신만의 방식으로 일하는";
   const strength = clip(a.good_at_unpaid || a.often_asked);
-  const identity = strength
+  const fallbackIdentity = strength
     ? `‘${strength}’을(를) 잘하는, ${style} 사람`
     : `${style} 사람`;
+  const identity = analysis.h.coreValues[0]
+    ? `${analysis.h.coreValues[0]}을(를) 중심에 둔 사람`
+    : fallbackIdentity;
 
-  // 원하는 것
   const wants = WANT[a.want_most] ?? "작게 시작할 방향";
 
-  // 지금 상황
   const statePart = STATE[a.current_state] ?? "다시 시작하려는";
   const flow = !m.hasActivity
     ? "이제 막 첫 걸음을 떼는 중"
     : m.gapDays >= 3
       ? "잠시 멈췄다가 다시 돌아온"
-      : p.streakOngoing && p.streak >= 2
+      : m.streakOngoing && m.currentStreak >= 2
         ? "흐름을 이어가는 중"
         : "작게 이어가고 있는";
   const situation = `${statePart} 상태에서, ${flow}`;
 
-  // 막힌 지점 (블로커) — 진단 + 최근 감정/피하고 싶은 일
-  const blockers: string[] = [];
-  if (BLOCKER[a.biggest_blocker]) blockers.push(BLOCKER[a.biggest_blocker]);
-  const recentMoods = notes.slice(-5).map((n) => n.moodTag);
-  if (recentMoods.includes("tired") || recentMoods.includes("anxious"))
-    blockers.push("최근 에너지가 낮아 보여요");
-  if ((a.dont_want ?? "").trim())
-    blockers.push(`‘${clip(a.dont_want)}’은 피하고 싶어함`);
-
+  const legacyBlockers: string[] = [];
+  if (BLOCKER[a.biggest_blocker]) legacyBlockers.push(BLOCKER[a.biggest_blocker]);
+  const blockers = (analysis.blockers.length ? analysis.blockers : legacyBlockers).slice(0, 3);
   const direction = session.report?.topRecommendation.label;
 
-  const oneLine = `${identity}. 지금은 ${wants}을(를) 원해요.${
-    direction ? ` 방향은 ‘${direction}’, ${p.clarity}% 선명해졌어요.` : ""
+  const oneLine = `${analysis.h.oneLiner}${
+    direction ? ` 지금의 1순위 방향은 ‘${direction}’입니다.` : ""
   }`;
 
   return {
     identity,
     wants,
     situation,
-    blockers: blockers.slice(0, 3),
+    blockers,
     direction,
-    clarity: p.clarity,
+    clarity: analysis.clarity,
     oneLine,
+    alignment: analysis.alignment,
+    confidence: analysis.h.confidence,
+    coreValues: analysis.h.coreValues,
+    antiValues: analysis.h.antiValues,
+    offerReadiness: analysis.offer.readiness,
+    offerConfidence: analysis.offer.confidence,
+    offerQuestion: analysis.offer.nextQuestion,
+    adaptiveQuestions: analysis.adaptiveQuestions,
   };
 }
 

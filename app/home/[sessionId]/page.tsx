@@ -84,6 +84,32 @@ export default async function HomeDashboard({
               <CompassRow label="막힌 지점" value={compass.blockers.join(" · ")} />
             )}
           </div>
+          <div className="mt-4 grid gap-2 rounded-2xl bg-cream-2 p-4 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-ink-soft">H 신뢰도</span>
+              <b className="text-ink">{Math.round(compass.confidence * 100)}%</b>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-ink-soft">M 정렬도</span>
+              <b className="text-ink">{Math.round(compass.alignment * 100)}%</b>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-ink-soft">Offer 준비도</span>
+              <b className="text-clay">
+                {compass.offerReadiness === "recommend"
+                  ? "추천 가능"
+                  : compass.offerReadiness === "explore"
+                    ? "탐색 중"
+                    : "질문 필요"}
+              </b>
+            </div>
+          </div>
+          {compass.offerQuestion && (
+            <div className="mt-3 rounded-2xl border border-clay/20 bg-clay-tint/30 p-4 text-sm leading-relaxed text-ink">
+              <b className="text-clay-deep">다음 질문 · </b>
+              {compass.offerQuestion}
+            </div>
+          )}
           {direction && (
             <Link
               href={`/result/${sessionId}`}
