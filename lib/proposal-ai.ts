@@ -217,7 +217,10 @@ async function callProposalClaude(
     const webResults = collectWebResults(data?.content);
     const parsed = extractJson(text) as RawProposal | null;
     if (!parsed && !(withWebSearch && webResults.length)) {
-      return { result: null, error: "json_parse_failed" };
+      return {
+        result: null,
+        error: `json_parse_failed_stop_${String(data?.stop_reason ?? "unknown")}_chars_${text.length}`,
+      };
     }
     const proposal = parsed ?? {};
     const actions = parseActions(proposal.actions);
