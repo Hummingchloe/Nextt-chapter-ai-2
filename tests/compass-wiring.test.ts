@@ -3,7 +3,13 @@ import assert from "node:assert/strict";
 
 import { addBeads, createEmptyCompass, type Axis } from "../lib/compass-engine.ts";
 import { extractBeadsHeuristic } from "../lib/compass-fallback.ts";
-import { actionToBead, deriveActions } from "../lib/compass-actions.ts";
+import {
+  actionToBead,
+  activeActions,
+  completeAction,
+  deriveActions,
+  findCompletedActionFromText,
+} from "../lib/compass-actions.ts";
 
 const AXES: Axis[] = [
   { id: "delivery", name: "전달 방식", posPole: "1:N 규모", negPole: "1:1 깊은 도움" },
@@ -61,4 +67,24 @@ test("completing a reinforce action moves the compass (alignment changes)", () =
   state = addBeads(state, [actionToBead(reinforce!, NOW, "done1")], NOW);
   assert.notEqual(state.alignment, before); // the needle actually moved
   assert.ok(state.beads.some((b) => b.source === "action"));
+});
+
+test("typed completion can resolve an active action and remove it from the next list", () => {
+  let state = addBeads(
+    createEmptyCompass(NOW, AXES),
+    [
+      { id: "s1", source: "record", what: "x", why: "", direction: [0.8, 0.6, -0.7], intensity: 0.8, confidence: 0.8, weight: 7, createdAt: NOW },
+      { id: "s2", source: "record", what: "y", why: "", direction: [0.7, 0.7, -0.6], intensity: 0.8, confidence: 0.8, weight: 7, createdAt: NOW },
+    ],
+    NOW,
+  );
+  const before = activeActions(state, NOW);
+  assert.ok(before.length > 0);
+
+  const matched = findCompletedActionFromText("액션 아이템 1개 해결했어요", before);
+  assert.equal(matched?.id, before[0].id);
+  state = completeAction(state, matched!, NOW, "typed1");
+
+  assert.ok(state.doneActions.some((done) => done.id === before[0].id));
+  assert.ok(!activeActions(state, NOW).some((action) => action.id === before[0].id));
 });

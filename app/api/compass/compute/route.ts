@@ -7,7 +7,11 @@ import {
 } from "@/lib/compass-engine";
 import { DEFAULT_AXES, extractBeads, induceAxes } from "@/lib/compass-extract";
 import { extractBeadsHeuristic } from "@/lib/compass-fallback";
-import { deriveActions } from "@/lib/compass-actions";
+import {
+  activeActions,
+  completeAction,
+  findCompletedActionFromText,
+} from "@/lib/compass-actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,8 +54,12 @@ export async function POST(req: Request) {
   const aiUsed = Boolean(llm);
   const beads = llm?.beads ?? extractBeadsHeuristic(input, state.axes, now, seed);
 
-  const next = addBeads(state, beads, now);
-  const actions = deriveActions(next, now);
+  let next = addBeads(state, beads, now);
+  const completedAction = findCompletedActionFromText(input, activeActions(state, now));
+  if (completedAction) {
+    next = completeAction(next, completedAction, now, `${seed}-typed`);
+  }
+  const actions = activeActions(next, now);
 
   return NextResponse.json({
     compass: next,
@@ -63,6 +71,7 @@ export async function POST(req: Request) {
       model: llm?.model,
       axisInduced: inducedAxes,
       beadCount: beads.length,
+      completedActionId: completedAction?.id,
     },
   });
 }

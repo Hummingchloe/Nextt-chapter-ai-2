@@ -31,6 +31,31 @@ export interface CompassAction {
   expectedDelta: number; // ΔM if completed
 }
 
+const COMPLETION_HINTS = [
+  "완료",
+  "해결",
+  "끝냈",
+  "했어",
+  "했어요",
+  "했습니다",
+  "보냈",
+  "작성했",
+  "만들었",
+  "실행",
+];
+
+const FIRST_ACTION_HINTS = [
+  "액션아이템1",
+  "액션 아이템 1",
+  "액션 1",
+  "1번",
+  "첫번째",
+  "첫 번째",
+  "첫 액션",
+  "하나",
+  "1개",
+];
+
 function candidate(
   id: string,
   source: Bead["source"],
@@ -115,6 +140,27 @@ export function activeActions(state: CompassState, now: string): CompassAction[]
   return deriveActions(state, now).filter((a) => !done.has(a.id));
 }
 
+export function findCompletedActionFromText(
+  text: string,
+  actions: CompassAction[],
+): CompassAction | null {
+  const normalized = text.replace(/\s+/g, " ").trim().toLowerCase();
+  if (!normalized || !COMPLETION_HINTS.some((hint) => normalized.includes(hint))) {
+    return null;
+  }
+
+  const ranked = actions
+    .map((action) => ({
+      action,
+      score: overlapScore(normalized, `${action.title} ${action.detail}`),
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  if (ranked[0]?.score > 0) return ranked[0].action;
+  if (FIRST_ACTION_HINTS.some((hint) => normalized.includes(hint))) return actions[0] ?? null;
+  return null;
+}
+
 // Complete an action: register its candidate as a real bead (moving the
 // compass) AND record it as done so it stops being re-offered.
 export function completeAction(
@@ -131,4 +177,13 @@ export function completeAction(
       { id: action.id, title: action.title, kind: action.kind, completedAt: now },
     ],
   };
+}
+
+function overlapScore(input: string, actionText: string): number {
+  return actionText
+    .replace(/[‘’"'(),.·]/g, " ")
+    .split(/\s+/)
+    .map((token) => token.trim().toLowerCase())
+    .filter((token) => token.length >= 2)
+    .reduce((score, token) => score + (input.includes(token) ? 1 : 0), 0);
 }
