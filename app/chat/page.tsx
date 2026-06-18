@@ -80,10 +80,34 @@ export default function ChatPage() {
         { id: `a-${Date.now()}`, role: "assistant", text: assistantText(next) },
       ]);
       setInput("");
+      void enrichEssence(next);
     } catch {
       setError("계산 중 문제가 있었어요. 잠시 후 다시 시도해 주세요.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Deferred enrichment: fetch the essence one-liner separately so the chat
+  // round-trip never waits on a second LLM call (the split-endpoint lesson).
+  async function enrichEssence(state: CompassState) {
+    try {
+      const res = await fetch("/api/compass/essence", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ compass: state }),
+      });
+      if (!res.ok) return;
+      const { oneLiner } = await res.json();
+      if (!oneLiner) return;
+      setCompass((prev) => {
+        if (!prev) return prev;
+        const enriched = { ...prev, compass: { ...prev.compass, oneLiner } };
+        void saveCompassState(enriched);
+        return enriched;
+      });
+    } catch {
+      /* keep the templated one-liner on failure */
     }
   }
 

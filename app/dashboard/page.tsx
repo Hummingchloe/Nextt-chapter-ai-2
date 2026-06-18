@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Wordmark } from "../components/Logo";
 import { loadCompassState, saveCompassState } from "@/lib/local-ontology-store";
-import { type CompassState } from "@/lib/compass-engine";
+import { readyForOffer, type CompassState } from "@/lib/compass-engine";
 import { activeActions, completeAction, type CompassAction } from "@/lib/compass-actions";
-import { deriveContent } from "@/lib/compass-content";
+import { deriveContent, type ContentLink } from "@/lib/compass-content";
 import { seedCompass } from "@/lib/compass-seed";
 
 const STATUS_LABEL: Record<CompassState["status"], string> = {
@@ -28,7 +28,35 @@ export default function DashboardPage() {
     () => (compass ? activeActions(compass, new Date().toISOString()) : []),
     [compass],
   );
-  const content = useMemo(() => (compass ? deriveContent(compass) : []), [compass]);
+
+  // Show deterministic content immediately, then swap in real searched videos
+  // when the deferred search endpoint responds (the show-actions-first pattern).
+  const [content, setContent] = useState<ContentLink[]>([]);
+  const [contentSearching, setContentSearching] = useState(false);
+  const beadCount = compass?.beads.length ?? 0;
+  useEffect(() => {
+    if (!compass) return setContent([]);
+    setContent(deriveContent(compass));
+    if (!readyForOffer(compass)) return;
+    let cancelled = false;
+    setContentSearching(true);
+    fetch("/api/compass/content", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ compass }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && Array.isArray(d?.links) && d.links.length) setContent(d.links);
+      })
+      .catch(() => {})
+      .finally(() => !cancelled && setContentSearching(false));
+    return () => {
+      cancelled = true;
+    };
+    // Re-search only when the body of evidence changes, not on every re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beadCount]);
 
   function complete(action: CompassAction) {
     if (!compass) return;
@@ -185,6 +213,9 @@ export default function DashboardPage() {
             </Section>
 
             <Section title="추천 유튜브 콘텐츠">
+              {contentSearching && content.length > 0 && (
+                <p className="mb-2 text-xs font-medium text-sage">실제 영상을 검색하는 중… (도착하면 교체됩니다)</p>
+              )}
               {content.length ? (
                 <div className="grid gap-3 md:grid-cols-3">
                   {content.map((link) => (

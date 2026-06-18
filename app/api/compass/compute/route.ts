@@ -5,12 +5,17 @@ import {
   recompute,
   type CompassState,
 } from "@/lib/compass-engine";
-import { DEFAULT_AXES, extractBeads, induceAxes, synthesizeEssence } from "@/lib/compass-extract";
+import { DEFAULT_AXES, extractBeads, induceAxes } from "@/lib/compass-extract";
 import { extractBeadsHeuristic } from "@/lib/compass-fallback";
 import { deriveActions } from "@/lib/compass-actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Keep this endpoint on a short, predictable critical path. The essence
+// one-liner and YouTube search are split into their own deferred endpoints
+// (/api/compass/essence, /api/compass/content) so we never chain heavy LLM
+// work in one request — the Vercel-timeout lesson.
+export const maxDuration = 30;
 
 // Stateless calculator: text in → updated CompassState + actions out. The
 // client persists the state to IndexedDB (source of truth); we store nothing.
@@ -45,17 +50,7 @@ export async function POST(req: Request) {
   const aiUsed = Boolean(llm);
   const beads = llm?.beads ?? extractBeadsHeuristic(input, state.axes, now, seed);
 
-  let next = addBeads(state, beads, now);
-
-  // Compress the beads into one high-abstraction essence sentence once a real
-  // direction has formed (LLM only; otherwise keep the templated one-liner).
-  if (aiUsed && next.status !== "listening") {
-    const essence = await synthesizeEssence(next.beads, next.axes, next.compass.dir);
-    if (essence) {
-      next = { ...next, compass: { ...next.compass, oneLiner: essence } };
-    }
-  }
-
+  const next = addBeads(state, beads, now);
   const actions = deriveActions(next, now);
 
   return NextResponse.json({

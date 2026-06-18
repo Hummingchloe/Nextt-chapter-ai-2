@@ -19,6 +19,7 @@ import "server-only";
 
 import { anthropicApiKey, anthropicModel } from "./ai-env";
 import type { Axis, Bead, BeadSource } from "./compass-engine";
+import type { ContentLink } from "./compass-content";
 
 const API_URL = "https://api.anthropic.com/v1/messages";
 const TIMEOUT_MS = 12000;
@@ -272,6 +273,73 @@ export async function synthesizeEssence(
   const input = await callTool(system, `[현재 방향]\n${hLine}\n\n[구슬]\n${beadLines}`, ESSENCE_TOOL);
   const sentence = typeof input?.sentence === "string" ? input.sentence.trim() : "";
   return sentence || null;
+}
+
+// Real YouTube recommendations via Anthropic's built-in web_search — one search
+// only, scoped to youtube.com. Following the Vercel-timeout lesson: this is its
+// OWN endpoint (never chained into /compute), lightweight, and URLs are
+// validated against the actual web_search_tool_result blocks, not trusted from
+// the model's prose. Returns null on no-key/failure → caller uses the
+// deterministic deriveContent() fallback.
+const YT_DIRECT = /(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)/i;
+
+export async function searchYoutubeContent(theme: string): Promise<ContentLink[] | null> {
+  const apiKey = anthropicApiKey();
+  if (!apiKey) return null;
+  const model = anthropicModel();
+  const prompt =
+    `"${theme}" 주제로, 막 시작하는 1인 창업자에게 실질적으로 도움이 될 한국어 유튜브 영상을 검색해 3개만 추천해줘. 첫 오퍼 만들기/고객 검증/작은 실행 위주로.`;
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 350,
+        tools: [
+          {
+            type: "web_search_20250305",
+            name: "web_search",
+            max_uses: 1,
+            allowed_domains: ["youtube.com"],
+          },
+        ],
+        messages: [{ role: "user", content: prompt }],
+      }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    // Pull URLs straight from the search tool results — never from prose.
+    const found: { url: string; title: string }[] = [];
+    for (const block of data?.content ?? []) {
+      if (block?.type !== "web_search_tool_result") continue;
+      const items = Array.isArray(block.content) ? block.content : [];
+      for (const it of items) {
+        if (
+          it?.type === "web_search_result" &&
+          typeof it.url === "string" &&
+          YT_DIRECT.test(it.url)
+        ) {
+          found.push({ url: it.url, title: typeof it.title === "string" ? it.title : it.url });
+        }
+      }
+    }
+    const links: ContentLink[] = found.slice(0, 3).map((r, i) => ({
+      id: `yt-${i}`,
+      title: r.title.length > 80 ? `${r.title.slice(0, 80)}…` : r.title,
+      url: r.url,
+      why: "실제 웹검색으로 찾은 영상이에요.",
+    }));
+    return links.length ? links : null;
+  } catch {
+    return null;
+  }
 }
 
 // corpus (recent user texts) → 3-5 learned axes. Run on a trigger (enough new

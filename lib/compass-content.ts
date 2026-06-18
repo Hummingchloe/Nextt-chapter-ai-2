@@ -20,7 +20,7 @@ function youtube(query: string): string {
 
 // Build a theme phrase from bead tags (most frequent first), falling back to the
 // dominant axis pole labels, then a generic phrase.
-function themeQuery(state: CompassState): string {
+export function contentTheme(state: CompassState): string {
   const counts = new Map<string, number>();
   for (const b of state.beads) {
     for (const tag of b.tags ?? []) {
@@ -46,7 +46,7 @@ function themeQuery(state: CompassState): string {
 
 export function deriveContent(state: CompassState): ContentLink[] {
   if (!readyForOffer(state)) return [];
-  const q = themeQuery(state);
+  const q = contentTheme(state);
   return [
     {
       id: "offer",
