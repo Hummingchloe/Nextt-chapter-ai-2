@@ -70,6 +70,46 @@ export default function DashboardPage() {
           setAiDashboard(cachedProposal.dashboard);
           setDiagnostics(cachedProposal.diagnostics);
         }
+
+        const searchResponse = await fetch("/api/proposal/search", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ontology: currentOntology }),
+        });
+        if (searchResponse.ok) {
+          const searchData = await searchResponse.json();
+          const searchDiagnostics =
+            searchData.diagnostics as ProposalGenerationDiagnostics;
+          if (
+            searchDiagnostics.webSearchUsed &&
+            Array.isArray(searchData.dashboard?.youtubeLinks) &&
+            searchData.dashboard.youtubeLinks.length
+          ) {
+            const mergedProposal = {
+              ontologyUpdatedAt: currentOntology.updatedAt,
+              dashboard: {
+                ...cachedProposal.dashboard,
+                youtubeLinks: searchData.dashboard.youtubeLinks,
+              } as ProposalDashboard,
+              diagnostics: {
+                ...cachedProposal.diagnostics,
+                webSearchUsed: true,
+                webSearchRequests: searchDiagnostics.webSearchRequests,
+                fallbackReason: undefined,
+              } as ProposalGenerationDiagnostics,
+            };
+            await saveCachedProposal(mergedProposal);
+            if (!cancelled) {
+              setAiDashboard(mergedProposal.dashboard);
+              setDiagnostics(mergedProposal.diagnostics);
+            }
+          } else if (!cancelled) {
+            setDiagnostics({
+              ...cachedProposal.diagnostics,
+              fallbackReason: searchDiagnostics.fallbackReason,
+            });
+          }
+        }
       } catch {
         if (!cancelled) setProposalError("Claude 제안을 불러오지 못해 기본 제안을 보여주고 있어요.");
       } finally {

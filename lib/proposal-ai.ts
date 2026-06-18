@@ -51,29 +51,7 @@ export async function generateProposalWithAI(
 
   const claudeAttempt = await callProposalClaude(ontology, apiKey, false);
   const claudeOnly = claudeAttempt.result;
-  if (claudeOnly) {
-    const searchAttempt = await callProposalClaude(ontology, apiKey, true);
-    const searched = searchAttempt.result;
-    if (searched?.diagnostics.webSearchUsed) {
-      return {
-        dashboard: {
-          ...claudeOnly.dashboard,
-          youtubeLinks: searched.dashboard.youtubeLinks,
-          generatedAt: new Date().toISOString(),
-        },
-        diagnostics: searched.diagnostics,
-      };
-    }
-    return {
-      ...claudeOnly,
-      diagnostics: {
-        ...claudeOnly.diagnostics,
-        fallbackReason: searched
-          ? "web_search_no_results"
-          : `web_search_unavailable:${searchAttempt.error ?? "unknown"}`,
-      },
-    };
-  }
+  if (claudeOnly) return claudeOnly;
 
   return {
     dashboard: fallback,
@@ -83,6 +61,38 @@ export async function generateProposalWithAI(
       webSearchUsed: false,
       webSearchRequests: 0,
       fallbackReason: `anthropic_request_failed:${claudeAttempt.error ?? "unknown"}`,
+    },
+  };
+}
+
+export async function searchProposalContentWithAI(
+  ontology: UserOntology,
+): Promise<ProposalAIResult> {
+  const apiKey = anthropicApiKey();
+  const fallback = buildProposalDashboard(ontology);
+  if (!apiKey) {
+    return {
+      dashboard: fallback,
+      diagnostics: {
+        aiUsed: false,
+        provider: "deterministic",
+        webSearchUsed: false,
+        webSearchRequests: 0,
+        fallbackReason: "missing_anthropic_key",
+      },
+    };
+  }
+
+  const attempt = await callProposalClaude(ontology, apiKey, true);
+  if (attempt.result) return attempt.result;
+  return {
+    dashboard: fallback,
+    diagnostics: {
+      aiUsed: false,
+      provider: "deterministic",
+      webSearchUsed: false,
+      webSearchRequests: 0,
+      fallbackReason: `web_search_failed:${attempt.error ?? "unknown"}`,
     },
   };
 }
@@ -117,7 +127,7 @@ async function callProposalClaude(
       },
       body: JSON.stringify({
         model,
-        max_tokens: withWebSearch ? 800 : 600,
+        max_tokens: withWebSearch ? 800 : 1000,
         temperature: 0.25,
         system,
         messages: [{
@@ -186,7 +196,7 @@ async function callProposalClaude(
           },
         }),
       }),
-      signal: AbortSignal.timeout(withWebSearch ? 10000 : 20000),
+      signal: AbortSignal.timeout(withWebSearch ? 14000 : 28000),
     });
     if (!response.ok) {
       const errorBody = await response.json().catch(() => null);
