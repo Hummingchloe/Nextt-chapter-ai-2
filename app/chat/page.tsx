@@ -158,7 +158,7 @@ export default function ChatPage() {
       {
         id: `a-seed-${Date.now()}`,
         role: "assistant",
-        text: `(테스트 온톨로지를 불러왔어요) 전직 AI 엔지니어로 AI 교육 창업을 그려보고 계시네요 — “${
+        text: `(테스트 데이터를 불러왔어요) 전직 AI 엔지니어로 AI 교육 창업을 그려보고 계시네요 — “${
           seeded.compass.essence ?? seeded.compass.oneLiner
         }”. 이 방향에서 요즘 가장 마음이 가는 건 뭐예요?`,
       },
@@ -186,7 +186,7 @@ export default function ChatPage() {
           <button
             onClick={feed}
             className="rounded-full border border-gold bg-cream-2 px-3 py-2 text-xs font-semibold text-clay-deep transition hover:bg-sand"
-            title="전직 AI 엔지니어 · AI 교육 창업 페르소나 구슬을 주입"
+            title="전직 AI 엔지니어 · AI 교육 창업 샘플 기록 불러오기"
           >
             🧪 테스트 먹이기
           </button>
@@ -227,7 +227,7 @@ export default function ChatPage() {
                 <p className="font-semibold">처음이라면 여기서 시작하면 됩니다.</p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                   요즘 떠오르는 고민, 오늘 한 작은 행동, 누가 물어본 문제를 그냥 적어주세요.
-                  글은 방향 신호로 바뀌어 이 브라우저에만 쌓입니다.
+                  기록은 이 브라우저에만 쌓이고, 나침반에 반영됩니다.
                 </p>
               </div>
             ) : (
@@ -316,10 +316,10 @@ function TypingDots() {
 }
 
 const CONVERGE: Record<CompassState["status"], string> = {
-  listening: "아직 공들이 흩어져 있어요 — 기록이 더 필요해요",
-  narrowing: "공들이 여러 방향이라 좁혀가는 중이에요",
-  confirming: "공들이 한 방향으로 모이기 시작했어요",
-  executing: "공들이 또렷이 한 방향으로 모였어요",
+  listening: "아직 기록이 부족해요",
+  narrowing: "여러 방향을 좁혀가는 중이에요",
+  confirming: "한 방향이 보이기 시작했어요",
+  executing: "지금 방향이 꽤 또렷해졌어요",
 };
 
 function CompassCard({ compass }: { compass: CompassState | null }) {

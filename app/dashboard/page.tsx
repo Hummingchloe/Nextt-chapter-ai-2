@@ -76,7 +76,7 @@ export default function DashboardPage() {
     const seeded = seedCompass(new Date().toISOString());
     setCompass(seeded);
     void saveCompassState(seeded);
-    setJustMoved("테스트 온톨로지(전직 AI 엔지니어 · AI 교육 창업)를 불러왔어요.");
+    setJustMoved("테스트 데이터(전직 AI 엔지니어 · AI 교육 창업)를 불러왔어요.");
   }
 
   const pct = compass ? Math.round(compass.displayAlignment * 100) : 0;
@@ -95,7 +95,7 @@ export default function DashboardPage() {
           <button
             onClick={feed}
             className="rounded-full border border-gold bg-cream-2 px-3 py-2 text-xs font-semibold text-clay-deep transition hover:bg-sand"
-            title="전직 AI 엔지니어 · AI 교육 창업 페르소나 구슬을 주입"
+            title="전직 AI 엔지니어 · AI 교육 창업 샘플 기록 불러오기"
           >
             🧪 테스트 먹이기
           </button>
@@ -148,9 +148,9 @@ export default function DashboardPage() {
             </div>
 
             <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
-              <p className="text-sm font-semibold text-ink">구슬 수렴 나침반</p>
+              <p className="text-sm font-semibold text-ink">방향 변화</p>
               <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                작은 공(구슬)들이 H로 모일수록 자화도 M(정렬도)이 올라가요. 축은 없어요 — 모이느냐만 봅니다.
+                기록이 쌓일수록 지금 방향이 얼마나 선명한지 보여줍니다.
               </p>
               <div className="mt-3">
                 <BeadCompass state={compass} />
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                         </span>
                         <span className="text-xs font-medium text-sage">
                           {a.kind === "probe"
-                            ? "🔍 축 선명도 ↑"
+                            ? "방향 확인"
                             : `예상 정렬도 ${a.expectedDelta >= 0 ? "+" : ""}${Math.round(a.expectedDelta * 100)}%`}
                         </span>
                       </div>
@@ -233,9 +233,9 @@ export default function DashboardPage() {
               )}
             </Section>
 
-            <Section title="시장/고객 신호">
+            <Section title="콘텐츠 추천">
               {contentSearching && content.length > 0 && (
-                <p className="mb-2 text-xs font-medium text-sage">실제 시장 참고 영상을 검색하는 중… (도착하면 교체됩니다)</p>
+                <p className="mb-2 text-xs font-medium text-sage">지금 방향에 맞는 콘텐츠를 검색하는 중… (도착하면 교체됩니다)</p>
               )}
               {content.length ? (
                 <div className="grid gap-3 md:grid-cols-3">
@@ -251,7 +251,7 @@ export default function DashboardPage() {
                         <img src={link.imageUrl} alt="" className="aspect-video w-full bg-cream object-cover" loading="lazy" />
                       ) : (
                         <div className="flex aspect-video items-center justify-center bg-cream-2 px-4 text-center text-xs font-semibold text-clay">
-                          시장 참고 자료
+                          콘텐츠 추천
                         </div>
                       )}
                       <div className="p-4">
@@ -266,7 +266,7 @@ export default function DashboardPage() {
               )}
             </Section>
 
-            <Section title="나의 기록 로그 (구슬)">
+            <Section title="최근 기록">
               {records.length ? (
                 <div className="space-y-3">
                   {records.map((b) => (
@@ -310,7 +310,7 @@ function MetricGrid({ compass }: { compass: CompassState | null }) {
   const items = [
     ["확신도", compass ? Math.round(compass.compass.confidence * 100) : 0],
     ["방향 강도", compass ? Math.round(compass.compass.magnitude * 100) : 0],
-    ["구슬", compass ? compass.beads.length : 0],
+    ["기록", compass ? compass.beads.length : 0],
   ] as const;
   return (
     <div className="grid grid-cols-3 gap-2">
