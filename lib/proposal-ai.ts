@@ -110,6 +110,7 @@ async function callProposalClaude(
     "사용자의 개인 온톨로지와 Compass 정렬도를 읽고, 지금 당장 할 수 있는 작은 행동과 실제 학습 콘텐츠를 제안합니다.",
     "액션은 오늘/내일/3일차로 나누고 각 행동은 15분 안에 시작 가능해야 합니다.",
     "사용자의 실제 자산, 시장 신호, 제약을 구체적으로 반영하세요. 일반적인 자기계발 문구를 금지합니다.",
+    "userSummary는 2문장 이내, 각 title은 30자 이내, detail은 60자 이내로 간결하게 작성하세요.",
     withWebSearch
       ? "웹서치를 반드시 사용해 YouTube의 실제 영상 페이지를 찾으세요. 검색 결과에 없는 URL은 만들지 마세요."
       : "웹서치를 사용할 수 없습니다. youtubeLinks는 빈 배열로 두세요.",
@@ -127,7 +128,7 @@ async function callProposalClaude(
       },
       body: JSON.stringify({
         model,
-        max_tokens: withWebSearch ? 800 : 1000,
+        max_tokens: withWebSearch ? 900 : 1600,
         temperature: 0.25,
         system,
         messages: [{
@@ -196,7 +197,7 @@ async function callProposalClaude(
           },
         }),
       }),
-      signal: AbortSignal.timeout(withWebSearch ? 14000 : 28000),
+      signal: AbortSignal.timeout(withWebSearch ? 18000 : 32000),
     });
     if (!response.ok) {
       const errorBody = await response.json().catch(() => null);
