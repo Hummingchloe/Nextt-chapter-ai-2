@@ -153,7 +153,6 @@ async function callProposalClaude(
                   actions: {
                     type: "array",
                     minItems: 1,
-                    maxItems: 3,
                     items: {
                       type: "object",
                       properties: {
@@ -167,7 +166,6 @@ async function callProposalClaude(
                   },
                   youtubeLinks: {
                     type: "array",
-                    maxItems: 0,
                     items: {
                       type: "object",
                       properties: {
