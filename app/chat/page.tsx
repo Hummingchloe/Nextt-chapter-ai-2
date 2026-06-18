@@ -22,6 +22,7 @@ interface Bubble {
   id: string;
   role: "user" | "assistant";
   text: string;
+  pending?: boolean;
 }
 
 const STATUS_LABEL: Record<CompassState["status"], string> = {
@@ -31,17 +32,17 @@ const STATUS_LABEL: Record<CompassState["status"], string> = {
   executing: "실행 단계",
 };
 
-function assistantText(state: CompassState): string {
-  const pct = Math.round(state.displayAlignment * 100);
-  switch (state.status) {
+// Fallback only (no key / reply failed). Human, never a numeric status line.
+function humanAck(status: CompassState["status"]): string {
+  switch (status) {
     case "executing":
-      return `방향이 또렷해졌어요(정렬도 ${pct}%). 대시보드에서 오늘의 액션을 확인하세요.`;
+      return "좋아요, 잘 들었어요. 이걸 실제로 한 걸음 더 옮긴다면 가장 먼저 누구한테 말해볼 것 같아요?";
     case "confirming":
-      return `방향 윤곽이 잡혀요(정렬도 ${pct}%). ${state.compass.oneLiner}`;
+      return "방향이 점점 선명해지는 것 같아요. 방금 얘기에서 한 걸음 더 들어가 볼까요?";
     case "narrowing":
-      return `여러 방향이 보여요. 한 축으로 좁혀가 볼게요. ${state.compass.oneLiner}`;
+      return "좋아요, 잘 기록됐어요. 요즘 그 일에서 가장 마음이 가는 지점은 어디예요?";
     default:
-      return `기록했어요. 아직 방향을 듣는 단계예요. ${state.compass.oneLiner}`;
+      return "그렇군요. 조금만 더 들려주세요 — 요즘 자주 떠오르는 생각이 있나요?";
   }
 }
 
@@ -61,31 +62,68 @@ export default function ChatPage() {
   async function send() {
     const text = input.trim();
     if (!compass || !text || loading) return;
+    const prior = compass;
+    const stamp = Date.now();
+    const pid = `a-${stamp}`;
+    const history = messages
+      .filter((b) => b.text && !b.pending)
+      .slice(-6)
+      .map((b) => ({ role: b.role, text: b.text }));
+
     setLoading(true);
     setError("");
-    setMessages((m) => [...m, { id: `u-${Date.now()}`, role: "user", text }]);
+    // User bubble + a pending assistant bubble (typing indicator).
+    setMessages((m) => [
+      ...m,
+      { id: `u-${stamp}`, role: "user", text },
+      { id: pid, role: "assistant", text: "", pending: true },
+    ]);
+    setInput("");
+
+    // (1) Coach reply — reacts to what they said. Parallel, fills the bubble.
+    void fetchReply(text, history, prior, pid);
+
+    // (2) Compass update — extraction only. Updates the side card, not the chat.
     try {
       const res = await fetch("/api/compass/compute", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ compass, input: text }),
+        body: JSON.stringify({ compass: prior, input: text }),
       });
       if (!res.ok) throw new Error("compute failed");
       const data = await res.json();
       const next = data.compass as CompassState;
       setCompass(next);
       await saveCompassState(next);
-      setMessages((m) => [
-        ...m,
-        { id: `a-${Date.now()}`, role: "assistant", text: assistantText(next) },
-      ]);
-      setInput("");
       void enrichEssence(next);
     } catch {
       setError("계산 중 문제가 있었어요. 잠시 후 다시 시도해 주세요.");
     } finally {
       setLoading(false);
     }
+  }
+
+  // Deferred coach reply: fill the pending bubble when it arrives (human ack on
+  // failure). Reacts to the user's message in the context of the prior compass.
+  async function fetchReply(
+    text: string,
+    history: { role: "user" | "assistant"; text: string }[],
+    prior: CompassState,
+    pid: string,
+  ) {
+    let reply: string | null = null;
+    try {
+      const res = await fetch("/api/compass/reply", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ compass: prior, input: text, history }),
+      });
+      if (res.ok) reply = (await res.json()).reply ?? null;
+    } catch {
+      /* fall through to human ack */
+    }
+    const finalText = reply || humanAck(prior.status);
+    setMessages((m) => m.map((b) => (b.id === pid ? { ...b, text: finalText, pending: false } : b)));
   }
 
   // Deferred enrichment: fetch the essence one-liner separately so the chat
@@ -120,9 +158,9 @@ export default function ChatPage() {
       {
         id: `a-seed-${Date.now()}`,
         role: "assistant",
-        text: `테스트 온톨로지를 불러왔어요 — 전직 AI 엔지니어 · AI 교육 창업 희망. 지금의 나: “${seeded.compass.essence ?? seeded.compass.oneLiner}” · 정렬도 ${Math.round(
-          seeded.displayAlignment * 100,
-        )}%. 대시보드에서 액션·콘텐츠를 확인하거나, 이어서 적어주세요.`,
+        text: `(테스트 온톨로지를 불러왔어요) 전직 AI 엔지니어로 AI 교육 창업을 그려보고 계시네요 — “${
+          seeded.compass.essence ?? seeded.compass.oneLiner
+        }”. 이 방향에서 요즘 가장 마음이 가는 건 뭐예요?`,
       },
     ]);
     setInput("");
@@ -202,7 +240,7 @@ export default function ChatPage() {
                         : "border border-line bg-cream-2 text-ink"
                     }`}
                   >
-                    {m.text}
+                    {m.pending ? <TypingDots /> : m.text}
                   </div>
                 </div>
               ))
@@ -260,6 +298,20 @@ export default function ChatPage() {
         </aside>
       </section>
     </main>
+  );
+}
+
+function TypingDots() {
+  return (
+    <span className="inline-flex items-center gap-1 py-0.5" aria-label="작성 중">
+      {[0, 150, 300].map((d) => (
+        <span
+          key={d}
+          className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-faint"
+          style={{ animationDelay: `${d}ms` }}
+        />
+      ))}
+    </span>
   );
 }
 
