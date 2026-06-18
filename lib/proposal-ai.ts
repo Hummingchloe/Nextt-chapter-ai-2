@@ -194,7 +194,14 @@ async function callProposalClaude(
       const errorBody = await response.json().catch(() => null);
       const errorType =
         typeof errorBody?.error?.type === "string" ? errorBody.error.type : "unknown";
-      return { result: null, error: `http_${response.status}_${errorType}` };
+      const errorMessage =
+        typeof errorBody?.error?.message === "string"
+          ? errorBody.error.message.replace(/\s+/g, "_").slice(0, 180)
+          : "no_message";
+      return {
+        result: null,
+        error: `http_${response.status}_${errorType}:${errorMessage}`,
+      };
     }
 
     const data = await response.json();
