@@ -2,7 +2,7 @@
 // Optional AI narrative layer.
 // The rule-based engine (lib/engine.ts) and deterministic report
 // (lib/report.ts) ALWAYS run and are the source of truth for QA.
-// If ANTHROPIC_API_KEY is present, we ask Claude to gently rewrite the
+// If ANTHROPIC_API_KEY (or legacy/local CLAUDE_API_KEY) is present, we ask Claude to gently rewrite the
 // final report copy to feel more personal — without changing the
 // recommended direction, offer, channels, or action.
 //
@@ -10,6 +10,7 @@
 // Safe fallback: any error returns the deterministic report unchanged.
 // ─────────────────────────────────────────────────────────────
 
+import { anthropicApiKey, anthropicModel } from "./ai-env";
 import { reportToText } from "./report";
 import {
   buildDailyReflection,
@@ -28,10 +29,10 @@ import type {
 // Sonnet 4.6 is the default: excellent Korean prose, fast + affordable,
 // and comfortably within Vercel function time limits. Override with
 // ANTHROPIC_MODEL (e.g. claude-opus-4-8 for max quality).
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
+const MODEL = anthropicModel();
 
 export function aiEnabled(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+  return Boolean(anthropicApiKey());
 }
 
 interface WarmFields {
@@ -75,7 +76,7 @@ export async function warmUpReport(
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY as string,
+        "x-api-key": anthropicApiKey() as string,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
@@ -130,7 +131,7 @@ async function callClaude(
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY as string,
+        "x-api-key": anthropicApiKey() as string,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({

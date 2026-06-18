@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { anthropicApiKey, anthropicModel } from "@/lib/ai-env";
 import { presentDbVars, resolveDbUrl } from "@/lib/db-url";
 import { listSessions, storageBackend } from "@/lib/store";
 
@@ -20,8 +21,8 @@ export async function GET() {
     backend: storageBackend,
     dbVarsPresent: presentDbVars(),
     dbHost: host, // host only — never the password
-    anthropicKey: Boolean(process.env.ANTHROPIC_API_KEY),
-    anthropicModel: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
+    anthropicKey: Boolean(anthropicApiKey()),
+    anthropicModel: anthropicModel(),
   };
 
   let db: string;

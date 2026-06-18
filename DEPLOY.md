@@ -52,6 +52,7 @@ Vercel 안에서 클릭 몇 번으로 끝납니다.
 1. Vercel 프로젝트 → **Settings → Environment Variables**
 2. 새 변수 추가:
    - Name: `ANTHROPIC_API_KEY` / Value: `sk-ant-...` (당신의 키)
+     - 참고: 기존 환경에 `CLAUDE_API_KEY`만 있으면 앱이 fallback으로 읽지만, Vercel에는 `ANTHROPIC_API_KEY` 이름을 권장합니다.
    - (선택) Name: `ANTHROPIC_MODEL` / Value: `claude-sonnet-4-6`
      - 기본값이 sonnet-4-6라 안 넣어도 됩니다. 최고 품질을 원하면 `claude-opus-4-8`.
 3. 환경은 **Production / Preview / Development** 모두 체크.
