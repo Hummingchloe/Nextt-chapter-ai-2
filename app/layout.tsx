@@ -5,7 +5,7 @@ import AppTabBar from "./components/AppTabBar";
 export const metadata: Metadata = {
   title: "My Next Chapter AI — Compass Chat",
   description:
-    "채팅 기록으로 로컬 온톨로지를 만들고, 대시보드에서 정렬도와 다음 행동을 확인하는 Compass Chat.",
+    "채팅 기록으로 나의 방향을 찾고, 대시보드에서 정렬도와 다음 행동을 확인하는 Compass Chat.",
   openGraph: {
     title: "My Next Chapter AI",
     description:

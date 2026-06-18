@@ -37,7 +37,7 @@ export default function BeadCompass({ state }: { state: CompassState | null }) {
   if (!state || beads.length === 0) {
     return (
       <div className="flex h-44 items-center justify-center rounded-2xl bg-cream-2 px-6 text-center text-sm text-ink-faint">
-        기록이 쌓이면 작은 공들이 떠오르고, 한 방향으로 모이기 시작해요.
+        기록이 쌓이면 방향 변화가 보이기 시작해요.
       </div>
     );
   }
@@ -59,7 +59,7 @@ export default function BeadCompass({ state }: { state: CompassState | null }) {
 
   return (
     <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="구슬 수렴 나침반">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="방향 변화 나침반">
         <defs>
           <radialGradient id="field" cx="50%" cy="28%" r="75%">
             <stop offset="0%" stopColor="var(--color-surface)" />
@@ -91,9 +91,6 @@ export default function BeadCompass({ state }: { state: CompassState | null }) {
               d={`M ${CX} ${needleTipY - 9} L ${CX - 5} ${needleTipY + 3} L ${CX + 5} ${needleTipY + 3} Z`}
               fill="var(--color-clay-deep)"
             />
-            <text x={CX + 12} y={needleTipY + 4} fontSize={11} fontWeight={700} fill="var(--color-clay-deep)">
-              H
-            </text>
           </g>
         )}
 
