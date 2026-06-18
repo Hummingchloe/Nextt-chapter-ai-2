@@ -10,6 +10,7 @@ import {
   saveCompassState,
 } from "@/lib/local-ontology-store";
 import type { CompassState } from "@/lib/compass-engine";
+import { seedCompass } from "@/lib/compass-seed";
 
 const STARTERS = [
   "요즘 가장 자주 드는 생각은...",
@@ -86,6 +87,24 @@ export default function ChatPage() {
     }
   }
 
+  async function feed() {
+    const now = new Date().toISOString();
+    const seeded = seedCompass(now);
+    setCompass(seeded);
+    await saveCompassState(seeded);
+    setMessages([
+      {
+        id: `a-seed-${Date.now()}`,
+        role: "assistant",
+        text: `테스트 온톨로지를 불러왔어요 — 전직 AI 엔지니어 · AI 교육 창업 희망. 지금의 나: “${seeded.compass.oneLiner}” · 정렬도 ${Math.round(
+          seeded.displayAlignment * 100,
+        )}%. 대시보드에서 액션·콘텐츠를 확인하거나, 이어서 적어주세요.`,
+      },
+    ]);
+    setInput("");
+    setError("");
+  }
+
   async function reset() {
     if (!confirm("이 브라우저에 저장된 나침반을 새로 시작할까요?")) return;
     const fresh = await resetCompassState(new Date().toISOString());
@@ -102,6 +121,13 @@ export default function ChatPage() {
           <Wordmark />
         </Link>
         <nav className="flex items-center gap-2 text-sm">
+          <button
+            onClick={feed}
+            className="rounded-full border border-gold bg-cream-2 px-3 py-2 text-xs font-semibold text-clay-deep transition hover:bg-sand"
+            title="전직 AI 엔지니어 · AI 교육 창업 페르소나 구슬을 주입"
+          >
+            🧪 테스트 먹이기
+          </button>
           <Link className="rounded-full bg-clay px-4 py-2 font-semibold text-white" href="/chat">
             채팅
           </Link>

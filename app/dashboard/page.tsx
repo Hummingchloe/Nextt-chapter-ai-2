@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Wordmark } from "../components/Logo";
 import { loadCompassState, saveCompassState } from "@/lib/local-ontology-store";
-import { addBeads, type CompassState } from "@/lib/compass-engine";
-import { actionToBead, deriveActions, type CompassAction } from "@/lib/compass-actions";
+import { type CompassState } from "@/lib/compass-engine";
+import { activeActions, completeAction, type CompassAction } from "@/lib/compass-actions";
+import { deriveContent } from "@/lib/compass-content";
+import { seedCompass } from "@/lib/compass-seed";
 
 const STATUS_LABEL: Record<CompassState["status"], string> = {
   listening: "듣는 중",
@@ -23,19 +25,27 @@ export default function DashboardPage() {
   }, []);
 
   const actions = useMemo(
-    () => (compass ? deriveActions(compass, new Date().toISOString()) : []),
+    () => (compass ? activeActions(compass, new Date().toISOString()) : []),
     [compass],
   );
+  const content = useMemo(() => (compass ? deriveContent(compass) : []), [compass]);
 
   function complete(action: CompassAction) {
     if (!compass) return;
     const now = new Date().toISOString();
     const before = compass.displayAlignment;
-    const next = addBeads(compass, [actionToBead(action, now, Date.now().toString(36))], now);
+    const next = completeAction(compass, action, now, Date.now().toString(36));
     setCompass(next);
     void saveCompassState(next);
     const delta = Math.round((next.displayAlignment - before) * 100);
     setJustMoved(`‘${action.title}’ 완료 · 정렬도 ${delta >= 0 ? "+" : ""}${delta}%`);
+  }
+
+  function feed() {
+    const seeded = seedCompass(new Date().toISOString());
+    setCompass(seeded);
+    void saveCompassState(seeded);
+    setJustMoved("테스트 온톨로지(전직 AI 엔지니어 · AI 교육 창업)를 불러왔어요.");
   }
 
   const pct = compass ? Math.round(compass.displayAlignment * 100) : 0;
@@ -51,6 +61,13 @@ export default function DashboardPage() {
           <Wordmark />
         </Link>
         <nav className="flex items-center gap-2 text-sm">
+          <button
+            onClick={feed}
+            className="rounded-full border border-gold bg-cream-2 px-3 py-2 text-xs font-semibold text-clay-deep transition hover:bg-sand"
+            title="전직 AI 엔지니어 · AI 교육 창업 페르소나 구슬을 주입"
+          >
+            🧪 테스트 먹이기
+          </button>
           <Link className="rounded-full border border-line bg-surface px-4 py-2 text-ink-soft" href="/chat">
             채팅
           </Link>
@@ -148,6 +165,43 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <Gate message="기록이 더 쌓이면 검증·강화 액션이 열립니다." />
+              )}
+              {compass && compass.doneActions.length > 0 && (
+                <div className="mt-4 border-t border-line pt-4">
+                  <p className="text-xs font-semibold text-ink-faint">완료한 액션</p>
+                  <ul className="mt-2 space-y-1.5">
+                    {compass.doneActions
+                      .slice()
+                      .reverse()
+                      .map((d) => (
+                        <li key={`${d.id}-${d.completedAt}`} className="flex items-center gap-2 text-sm text-ink-soft">
+                          <span className="text-sage">✓</span>
+                          <span className="line-through decoration-ink-faint/50">{d.title}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
+            </Section>
+
+            <Section title="추천 유튜브 콘텐츠">
+              {content.length ? (
+                <div className="grid gap-3 md:grid-cols-3">
+                  {content.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-2xl border border-line bg-surface p-4 transition hover:border-clay hover:shadow-soft"
+                    >
+                      <p className="font-semibold leading-snug text-ink">{link.title}</p>
+                      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{link.why}</p>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <Gate message="방향이 충분히 또렷해지면 추천 콘텐츠가 열립니다." />
               )}
             </Section>
 

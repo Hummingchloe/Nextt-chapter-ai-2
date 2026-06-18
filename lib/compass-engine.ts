@@ -58,6 +58,13 @@ export interface WorkCompass {
 
 export type CompassStatus = "listening" | "narrowing" | "confirming" | "executing";
 
+export interface CompletedAction {
+  id: string;
+  title: string;
+  kind: "probe" | "reinforce";
+  completedAt: string;
+}
+
 export interface CompassState {
   version: 2;
   createdAt: string;
@@ -69,6 +76,7 @@ export interface CompassState {
   displayAlignment: number; // M shrunk toward 0 when evidence is thin (honest headline %)
   evidence: number; // total effective evidence mass (decayed, confidence-weighted)
   status: CompassStatus;
+  doneActions: CompletedAction[]; // actions the user has marked complete
 }
 
 export interface SimulationResult {
@@ -292,6 +300,7 @@ export function recompute(state: CompassState, now: string): CompassState {
     displayAlignment: m * (mass / (mass + SHRINK_K)),
     evidence: mass,
     status,
+    doneActions: state.doneActions ?? [],
   };
 }
 
@@ -313,6 +322,7 @@ export function createEmptyCompass(now: string, axes: Axis[] = []): CompassState
     displayAlignment: 0,
     evidence: 0,
     status: "listening",
+    doneActions: [],
   };
   return base;
 }

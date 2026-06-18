@@ -13,6 +13,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import {
+  addBeads,
   mostUncertainAxis,
   readyForOffer,
   simulate,
@@ -105,5 +106,29 @@ export function actionToBead(action: CompassAction, now: string, idSeed: string)
     what: action.title,
     why: "사용자가 실제로 완료한 행동",
     createdAt: now,
+  };
+}
+
+// Active actions = freshly derived ones minus the ones already completed.
+export function activeActions(state: CompassState, now: string): CompassAction[] {
+  const done = new Set(state.doneActions.map((d) => d.id));
+  return deriveActions(state, now).filter((a) => !done.has(a.id));
+}
+
+// Complete an action: register its candidate as a real bead (moving the
+// compass) AND record it as done so it stops being re-offered.
+export function completeAction(
+  state: CompassState,
+  action: CompassAction,
+  now: string,
+  idSeed: string,
+): CompassState {
+  const moved = addBeads(state, [actionToBead(action, now, idSeed)], now);
+  return {
+    ...moved,
+    doneActions: [
+      ...moved.doneActions,
+      { id: action.id, title: action.title, kind: action.kind, completedAt: now },
+    ],
   };
 }
