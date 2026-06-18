@@ -44,27 +44,24 @@ export async function generateProposalWithAI(
     };
   }
 
-  const [searched, claudeOnly] = await Promise.all([
-    callProposalClaude(ontology, apiKey, true),
-    callProposalClaude(ontology, apiKey, false),
-  ]);
-  if (searched?.diagnostics.webSearchUsed) return searched;
-
+  const claudeOnly = await callProposalClaude(ontology, apiKey, false);
   if (claudeOnly) {
+    const searched = await callProposalClaude(ontology, apiKey, true);
+    if (searched?.diagnostics.webSearchUsed) {
+      return {
+        dashboard: {
+          ...claudeOnly.dashboard,
+          youtubeLinks: searched.dashboard.youtubeLinks,
+          generatedAt: new Date().toISOString(),
+        },
+        diagnostics: searched.diagnostics,
+      };
+    }
     return {
       ...claudeOnly,
       diagnostics: {
         ...claudeOnly.diagnostics,
-        fallbackReason: "web_search_unavailable",
-      },
-    };
-  }
-  if (searched) {
-    return {
-      ...searched,
-      diagnostics: {
-        ...searched.diagnostics,
-        fallbackReason: "web_search_no_results",
+        fallbackReason: searched ? "web_search_no_results" : "web_search_unavailable",
       },
     };
   }
@@ -111,7 +108,7 @@ async function callProposalClaude(
       },
       body: JSON.stringify({
         model,
-        max_tokens: 1500,
+        max_tokens: withWebSearch ? 1100 : 800,
         temperature: 0.25,
         system,
         messages: [{
@@ -138,7 +135,7 @@ async function callProposalClaude(
           }],
         } : {}),
       }),
-      signal: AbortSignal.timeout(withWebSearch ? 14000 : 12000),
+      signal: AbortSignal.timeout(withWebSearch ? 12000 : 14000),
     });
     if (!response.ok) return null;
 
