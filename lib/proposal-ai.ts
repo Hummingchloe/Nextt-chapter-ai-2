@@ -127,7 +127,7 @@ async function callProposalClaude(
           }],
         } : {}),
       }),
-      signal: AbortSignal.timeout(withWebSearch ? 24000 : 12000),
+      signal: AbortSignal.timeout(withWebSearch ? 12000 : 8000),
     });
     if (!response.ok) return null;
 
