@@ -1,15 +1,22 @@
 "use client";
 
-import type { CompassState } from "@/lib/compass-engine";
+import { cosine, type CompassState } from "@/lib/compass-engine";
 
-// A compact "compass rose" of the user's beads, using star-coordinate
-// projection: each learned axis is a spoke; a bead is pulled toward the axes it
-// loads on. The H needle points to the weighted center of mass; its length is
-// the coherence (magnitude). Pure SVG, no deps, themed to the warm palette.
+// Convergence compass. No axes — those are just an arbitrary coordinate basis.
+// What matters: each bead is a floating ball with a direction; M is whether
+// they're converging into one; H is the consensus direction (the needle). A
+// ball's height = its alignment to H (cosine), so aligned balls are pulled up
+// into the needle tip and divergent balls fan out at the base. You literally
+// see "공들이 모이고 있느냐". H's meaning lives in one sentence (the caption),
+// not in numbers — like a latent-space compression raised to language.
 
-const SIZE = 300;
-const C = SIZE / 2;
-const R = 120;
+const W = 300;
+const H = 290;
+const CX = W / 2;
+const BASE_Y = 252;
+const TIP_Y = 40;
+const SPAN = BASE_Y - TIP_Y; // vertical travel
+const MAX_HALF = 126; // funnel half-width at the base
 
 const SOURCE_COLOR: Record<string, string> = {
   record: "var(--color-ink-faint)",
@@ -22,116 +29,88 @@ function clamp(x: number, lo: number, hi: number): number {
 }
 
 export default function BeadCompass({ state }: { state: CompassState | null }) {
-  const axes = state?.axes ?? [];
   const beads = state?.beads ?? [];
-  const n = axes.length;
+  const hDir = state?.compass.dir ?? [];
+  const hLen = Math.sqrt(hDir.reduce((s, x) => s + x * x, 0));
+  const m = state?.alignment ?? 0;
 
-  if (!state || n < 2) {
+  if (!state || beads.length === 0) {
     return (
-      <div className="flex h-44 items-center justify-center rounded-2xl bg-cream-2 text-sm text-ink-faint">
-        구슬이 모이면 여기에 방향 지도가 그려져요.
+      <div className="flex h-44 items-center justify-center rounded-2xl bg-cream-2 px-6 text-center text-sm text-ink-faint">
+        기록이 쌓이면 작은 공들이 떠오르고, 한 방향으로 모이기 시작해요.
       </div>
     );
   }
 
-  // Spoke unit vectors (top = up, clockwise).
-  const spokes = axes.map((_, i) => {
-    const t = -Math.PI / 2 + (2 * Math.PI * i) / n;
-    return [Math.cos(t), Math.sin(t)] as const;
+  const needleTipY = BASE_Y - SPAN * clamp(m, 0, 1);
+
+  // Place each bead by its alignment to H. golden-angle spread avoids overlap.
+  const dots = beads.map((b, i) => {
+    const a = hLen > 1e-6 ? clamp(cosine(b.direction, hDir), -1, 1) : 0;
+    const t = (a + 1) / 2; // 1 = aligned (top), 0 = opposed (base)
+    const y = BASE_Y - SPAN * t;
+    const halfW = MAX_HALF * Math.pow(1 - t, 1.15);
+    const jx = Math.cos(i * 2.399963); // deterministic, well-distributed in [-1,1]
+    const x = CX + jx * halfW;
+    const r = 3 + (clamp(b.weight, 1, 10) / 10) * 6;
+    const opacity = clamp(0.42 + b.confidence * 0.5, 0.42, 0.95);
+    return { b, x, y, r, opacity, newest: i === beads.length - 1 };
   });
-
-  const project = (dir: number[]): [number, number] => {
-    let x = 0;
-    let y = 0;
-    for (let i = 0; i < n; i++) {
-      const c = dir[i] ?? 0;
-      x += c * spokes[i][0];
-      y += c * spokes[i][1];
-    }
-    return [x, y];
-  };
-  const mag = (p: [number, number]) => Math.hypot(p[0], p[1]);
-
-  const raw = beads.map((b) => project(b.direction));
-  const hRaw = project(state.compass.dir);
-  const maxReach = Math.max(1e-6, ...raw.map(mag), mag(hRaw));
-  const fit = (R * 0.82) / maxReach;
-
-  // Needle: direction of H, length = coherence (magnitude).
-  const hLen = mag(hRaw);
-  const hUnit: [number, number] = hLen ? [hRaw[0] / hLen, hRaw[1] / hLen] : [0, 0];
-  const needleLen = R * 0.82 * clamp(state.compass.magnitude, 0, 1);
-  const nx = C + hUnit[0] * needleLen;
-  const ny = C + hUnit[1] * needleLen;
 
   return (
     <div>
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full" role="img" aria-label="구슬 방향 지도">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="구슬 수렴 나침반">
         <defs>
-          <radialGradient id="rose" cx="50%" cy="50%" r="50%">
+          <radialGradient id="field" cx="50%" cy="28%" r="75%">
             <stop offset="0%" stopColor="var(--color-surface)" />
             <stop offset="100%" stopColor="var(--color-cream-2)" />
           </radialGradient>
+          <linearGradient id="needle" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="var(--color-clay)" />
+            <stop offset="100%" stopColor="var(--color-clay-deep)" />
+          </linearGradient>
         </defs>
 
-        <circle cx={C} cy={C} r={R} fill="url(#rose)" stroke="var(--color-line)" />
-        {[0.66, 0.33].map((k) => (
-          <circle key={k} cx={C} cy={C} r={R * k} fill="none" stroke="var(--color-line)" strokeWidth={1} opacity={0.7} />
-        ))}
+        <rect x="0" y="0" width={W} height={H} rx="16" fill="url(#field)" />
 
-        {/* Axis spokes + pole labels */}
-        {spokes.map((s, i) => {
-          const ex = C + s[0] * R;
-          const ey = C + s[1] * R;
-          const lx = C + s[0] * (R + 12);
-          const ly = C + s[1] * (R + 12);
-          return (
-            <g key={axes[i].id}>
-              <line x1={C} y1={C} x2={ex} y2={ey} stroke="var(--color-line)" strokeWidth={1} />
-              <text
-                x={lx}
-                y={ly}
-                fontSize={9}
-                fill="var(--color-ink-faint)"
-                textAnchor={Math.abs(s[0]) < 0.3 ? "middle" : s[0] > 0 ? "start" : "end"}
-                dominantBaseline="middle"
-              >
-                {axes[i].posPole.slice(0, 8)}
-              </text>
-            </g>
-          );
-        })}
+        {/* Convergence funnel guides (faint): tip at top, fanning to the base. */}
+        <path
+          d={`M ${CX} ${TIP_Y} L ${CX - MAX_HALF} ${BASE_Y} M ${CX} ${TIP_Y} L ${CX + MAX_HALF} ${BASE_Y}`}
+          stroke="var(--color-line)"
+          strokeWidth={1}
+          fill="none"
+        />
+        <line x1={CX} y1={TIP_Y} x2={CX} y2={BASE_Y} stroke="var(--color-line)" strokeWidth={1} strokeDasharray="3 5" />
 
-        {/* H needle */}
-        {state.compass.magnitude > 0.02 && (
+        {/* H needle — length = M (coherence). The hero. */}
+        {m > 0.03 && (
           <g>
-            <line x1={C} y1={C} x2={nx} y2={ny} stroke="var(--color-clay)" strokeWidth={6} strokeLinecap="round" opacity={0.25} />
-            <line x1={C} y1={C} x2={nx} y2={ny} stroke="var(--color-clay-deep)" strokeWidth={2.5} strokeLinecap="round" />
-            <circle cx={nx} cy={ny} r={4} fill="var(--color-clay-deep)" />
+            <line x1={CX} y1={BASE_Y} x2={CX} y2={needleTipY} stroke="var(--color-clay)" strokeWidth={7} strokeLinecap="round" opacity={0.2} />
+            <line x1={CX} y1={BASE_Y} x2={CX} y2={needleTipY} stroke="url(#needle)" strokeWidth={2.5} strokeLinecap="round" />
+            <path
+              d={`M ${CX} ${needleTipY - 9} L ${CX - 5} ${needleTipY + 3} L ${CX + 5} ${needleTipY + 3} Z`}
+              fill="var(--color-clay-deep)"
+            />
+            <text x={CX + 12} y={needleTipY + 4} fontSize={11} fontWeight={700} fill="var(--color-clay-deep)">
+              H
+            </text>
           </g>
         )}
 
-        {/* Beads */}
-        {beads.map((b, i) => {
-          const px = C + raw[i][0] * fit;
-          const py = C + raw[i][1] * fit;
-          const r = 3 + (clamp(b.weight, 1, 10) / 10) * 7;
-          const opacity = clamp(0.35 + b.confidence * 0.55, 0.35, 0.95);
-          const isNewest = i === beads.length - 1;
-          return (
-            <g key={b.id}>
-              {isNewest && (
-                <circle cx={px} cy={py} r={r} fill="none" stroke={SOURCE_COLOR[b.source]} strokeWidth={1.5}>
-                  <animate attributeName="r" from={r} to={r + 10} dur="1.4s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from={0.6} to={0} dur="1.4s" repeatCount="indefinite" />
-                </circle>
-              )}
-              <circle cx={px} cy={py} r={r} fill={SOURCE_COLOR[b.source]} opacity={opacity} stroke="var(--color-surface)" strokeWidth={1.5} />
-            </g>
-          );
-        })}
+        {/* Beads — floating balls; height = alignment to H. */}
+        {dots.map(({ b, x, y, r, opacity, newest }) => (
+          <g key={b.id}>
+            {newest && (
+              <circle cx={x} cy={y} r={r} fill="none" stroke={SOURCE_COLOR[b.source]} strokeWidth={1.5}>
+                <animate attributeName="r" from={r} to={r + 9} dur="1.5s" repeatCount="indefinite" />
+                <animate attributeName="opacity" from={0.6} to={0} dur="1.5s" repeatCount="indefinite" />
+              </circle>
+            )}
+            <circle cx={x} cy={y} r={r} fill={SOURCE_COLOR[b.source]} opacity={opacity} stroke="var(--color-surface)" strokeWidth={1.5} />
+          </g>
+        ))}
 
-        <circle cx={C} cy={C} r={3} fill="var(--color-ink)" />
+        <circle cx={CX} cy={BASE_Y} r={3} fill="var(--color-ink)" />
       </svg>
 
       <div className="mt-2 flex items-center justify-center gap-4 text-xs text-ink-faint">

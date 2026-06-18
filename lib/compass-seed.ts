@@ -79,6 +79,6 @@ export function seedCompass(now: string): CompassState {
     doneActions: [],
   };
   const computed = recompute(base, now);
-  // Override the templated one-liner with the demo essence (what the LLM would write).
-  return { ...computed, compass: { ...computed.compass, oneLiner: ESSENCE } };
+  // Attach the demo essence (what the LLM would write); persists across recompute.
+  return { ...computed, compass: { ...computed.compass, essence: ESSENCE } };
 }

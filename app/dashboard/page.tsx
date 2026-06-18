@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Wordmark } from "../components/Logo";
+import BeadCompass from "../components/BeadCompass";
 import { loadCompassState, saveCompassState } from "@/lib/local-ontology-store";
 import { readyForOffer, type CompassState } from "@/lib/compass-engine";
 import { activeActions, completeAction, type CompassAction } from "@/lib/compass-actions";
@@ -131,7 +132,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <p className="mt-5 text-sm leading-relaxed text-ink-soft">
-                {compass?.compass.oneLiner ?? "아직 기록이 없습니다. 채팅에서 첫 문장을 남겨주세요."}
+                {compass?.compass.essence ?? compass?.compass.oneLiner ?? "아직 기록이 없습니다. 채팅에서 첫 문장을 남겨주세요."}
               </p>
               {justMoved && (
                 <p className="mt-3 rounded-xl bg-sage-tint px-3 py-2 text-xs font-medium text-sage">{justMoved}</p>
@@ -144,28 +145,20 @@ export default function DashboardPage() {
               </Link>
             </div>
 
+            <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
+              <p className="text-sm font-semibold text-ink">구슬 수렴 나침반</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                작은 공(구슬)들이 H로 모일수록 자화도 M(정렬도)이 올라가요. 축은 없어요 — 모이느냐만 봅니다.
+              </p>
+              <div className="mt-3">
+                <BeadCompass state={compass} />
+              </div>
+            </div>
+
             <MetricGrid compass={compass} />
           </aside>
 
           <div className="space-y-5">
-            <Section title="학습된 축 (페르소나 아님 · 기록에서 도출)">
-              {compass?.axes.length ? (
-                <div className="space-y-3">
-                  {compass.axes.map((axis, i) => (
-                    <AxisRow
-                      key={axis.id}
-                      name={axis.name}
-                      posPole={axis.posPole}
-                      negPole={axis.negPole}
-                      value={compass.compass.dir[i] ?? 0}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <Gate message="첫 기록이 들어오면 이 사람만의 방향 축을 도출합니다." />
-              )}
-            </Section>
-
             <Section title="날짜별 액션 아이템 (완료하면 나침반이 움직입니다)">
               {actions.length ? (
                 <div className="grid gap-3 md:grid-cols-2">
@@ -176,8 +169,9 @@ export default function DashboardPage() {
                           {a.kind === "probe" ? "검증 실험" : "방향 강화"}
                         </span>
                         <span className="text-xs font-medium text-sage">
-                          예상 {a.expectedDelta >= 0 ? "+" : ""}
-                          {Math.round(a.expectedDelta * 100)}%
+                          {a.kind === "probe"
+                            ? "🔍 축 선명도 ↑"
+                            : `예상 정렬도 ${a.expectedDelta >= 0 ? "+" : ""}${Math.round(a.expectedDelta * 100)}%`}
                         </span>
                       </div>
                       <p className="mt-2 font-semibold leading-snug text-ink">{a.title}</p>
@@ -256,36 +250,6 @@ export default function DashboardPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function AxisRow({
-  name,
-  posPole,
-  negPole,
-  value,
-}: {
-  name: string;
-  posPole: string;
-  negPole: string;
-  value: number;
-}) {
-  const pct = Math.round(((value + 1) / 2) * 100); // -1..1 → 0..100
-  return (
-    <div className="rounded-2xl bg-cream p-4">
-      <p className="text-sm font-semibold text-ink">{name}</p>
-      <div className="mt-2 flex items-center justify-between text-xs text-ink-faint">
-        <span>{negPole}</span>
-        <span>{posPole}</span>
-      </div>
-      <div className="relative mt-1.5 h-2 rounded-full bg-cream-2">
-        <div className="absolute inset-y-0 left-1/2 w-px bg-line" />
-        <div
-          className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-clay shadow-sm"
-          style={{ left: `${pct}%` }}
-        />
-      </div>
-    </div>
   );
 }
 

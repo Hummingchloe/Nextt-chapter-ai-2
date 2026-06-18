@@ -13,3 +13,8 @@ npm-debug.log*
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# local test artifacts
+.playwright-mcp/
+compass-*.png
+s12.png

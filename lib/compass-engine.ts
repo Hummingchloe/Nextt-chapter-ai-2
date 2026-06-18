@@ -52,7 +52,8 @@ export interface WorkCompass {
   dir: number[]; // unit vector: the magnetization (H) direction
   magnitude: number; // 0..1 coherence of H itself (how polarized the posteriors are)
   confidence: number; // 0..1 evidence-based confidence
-  oneLiner: string; // templated fallback; LLM may overwrite
+  oneLiner: string; // deterministic templated fallback (recomputed each time)
+  essence?: string; // LLM/seed-written compression; persists across recompute
   perAxis: AxisPosterior[]; // Bayesian uncertainty model, one per axis
 }
 
@@ -290,6 +291,7 @@ export function recompute(state: CompassState, now: string): CompassState {
     magnitude: posteriorMagnitude(perAxis),
     confidence,
     oneLiner: fallbackOneLiner(state.axes, dir, status),
+    essence: state.compass?.essence, // preserve the LLM/seed sentence across recompute
     perAxis,
   };
   return {

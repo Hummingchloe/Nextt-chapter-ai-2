@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { readyForOffer } from "../lib/compass-engine.ts";
+import { addBeads, readyForOffer, recompute } from "../lib/compass-engine.ts";
 import { seedCompass } from "../lib/compass-seed.ts";
 import { deriveContent } from "../lib/compass-content.ts";
 import { activeActions, completeAction } from "../lib/compass-actions.ts";
@@ -17,7 +17,21 @@ test("seed builds a real, coherent compass (engine-computed, not faked)", () => 
   assert.ok(["confirming", "executing"].includes(s.status));
   // Direction matches the persona: 1:N(+) / 전문성(-) / 입문자(+).
   assert.ok(s.compass.dir[0] > 0 && s.compass.dir[1] < 0 && s.compass.dir[2] > 0);
-  assert.ok(s.compass.oneLiner.includes("교육"));
+  // The rich essence (LLM/seed sentence) persists separately from the template.
+  assert.ok((s.compass.essence ?? "").includes("교육"));
+});
+
+test("essence survives recompute and addBeads (not clobbered by the template)", () => {
+  const s = seedCompass(NOW);
+  const essence = s.compass.essence;
+  assert.ok(essence);
+  // recompute (what loadCompassState does on every dashboard load) must keep it.
+  assert.equal(recompute(s, NOW).compass.essence, essence);
+  // adding a new bead recomputes the template one-liner but keeps the essence.
+  const grown = addBeads(s, [
+    { id: "x", source: "record", what: "y", why: "", direction: [0.8, -0.3, 0.6], intensity: 0.8, confidence: 0.8, weight: 7, createdAt: NOW },
+  ], NOW);
+  assert.equal(grown.compass.essence, essence);
 });
 
 test("dashboard reads the seed → content + actions appear", () => {

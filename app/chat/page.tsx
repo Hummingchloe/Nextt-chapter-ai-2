@@ -102,7 +102,7 @@ export default function ChatPage() {
       if (!oneLiner) return;
       setCompass((prev) => {
         if (!prev) return prev;
-        const enriched = { ...prev, compass: { ...prev.compass, oneLiner } };
+        const enriched = { ...prev, compass: { ...prev.compass, essence: oneLiner } };
         void saveCompassState(enriched);
         return enriched;
       });
@@ -120,7 +120,7 @@ export default function ChatPage() {
       {
         id: `a-seed-${Date.now()}`,
         role: "assistant",
-        text: `테스트 온톨로지를 불러왔어요 — 전직 AI 엔지니어 · AI 교육 창업 희망. 지금의 나: “${seeded.compass.oneLiner}” · 정렬도 ${Math.round(
+        text: `테스트 온톨로지를 불러왔어요 — 전직 AI 엔지니어 · AI 교육 창업 희망. 지금의 나: “${seeded.compass.essence ?? seeded.compass.oneLiner}” · 정렬도 ${Math.round(
           seeded.displayAlignment * 100,
         )}%. 대시보드에서 액션·콘텐츠를 확인하거나, 이어서 적어주세요.`,
       },
@@ -244,16 +244,7 @@ export default function ChatPage() {
         </div>
 
         <aside className="space-y-4">
-          <EssenceCard compass={compass} />
-          <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
-            <p className="text-sm font-semibold text-ink">나의 구슬 지도</p>
-            <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-              기록이 방향 벡터(구슬)로 쌓이고, 바늘은 무게중심을 가리켜요.
-            </p>
-            <div className="mt-3">
-              <BeadCompass state={compass} />
-            </div>
-          </div>
+          <CompassCard compass={compass} />
           <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
             <p className="text-sm font-semibold text-ink">로컬 우선 저장</p>
             <p className="mt-2 text-xs leading-relaxed text-ink-soft">
@@ -272,12 +263,19 @@ export default function ChatPage() {
   );
 }
 
-function EssenceCard({ compass }: { compass: CompassState | null }) {
+const CONVERGE: Record<CompassState["status"], string> = {
+  listening: "아직 공들이 흩어져 있어요 — 기록이 더 필요해요",
+  narrowing: "공들이 여러 방향이라 좁혀가는 중이에요",
+  confirming: "공들이 한 방향으로 모이기 시작했어요",
+  executing: "공들이 또렷이 한 방향으로 모였어요",
+};
+
+function CompassCard({ compass }: { compass: CompassState | null }) {
   const pct = compass ? Math.round(compass.displayAlignment * 100) : 0;
   return (
     <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-clay">지금의 나 — 한 문장</p>
+        <p className="text-sm font-semibold text-clay">나의 나침반 — H</p>
         {compass && (
           <span className="rounded-full bg-cream-2 px-2.5 py-1 text-xs font-medium text-ink-soft">
             {STATUS_LABEL[compass.status]}
@@ -285,15 +283,23 @@ function EssenceCard({ compass }: { compass: CompassState | null }) {
         )}
       </div>
       <p className="mt-3 font-display text-lg font-bold leading-snug text-ink">
-        {compass?.compass.oneLiner ?? "아직 방향을 듣는 중이에요."}
+        {compass?.compass.essence ?? compass?.compass.oneLiner ?? "아직 방향을 듣는 중이에요."}
       </p>
-      <div className="mt-4 flex items-center gap-3">
+      <p className="mt-1 text-xs text-ink-faint">숫자로 못 박는 방향(H)을 한 문장으로 압축</p>
+
+      <div className="mt-3">
+        <BeadCompass state={compass} />
+      </div>
+
+      <div className="mt-3 flex items-center gap-3">
         <div className="h-2 flex-1 overflow-hidden rounded-full bg-cream-2">
           <div className="h-full rounded-full bg-clay transition-all duration-500" style={{ width: `${pct}%` }} />
         </div>
         <span className="text-sm font-semibold text-clay">{pct}%</span>
       </div>
-      <p className="mt-1.5 text-xs text-ink-faint">정렬도 — 기록이 쌓일수록 또렷해져요</p>
+      <p className="mt-1.5 text-xs text-ink-faint">
+        자화도 M(정렬도) — {compass ? CONVERGE[compass.status] : "계산 전"}
+      </p>
     </div>
   );
 }
