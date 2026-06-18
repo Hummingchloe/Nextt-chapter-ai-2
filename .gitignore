@@ -10,3 +10,6 @@ npm-debug.log*
 /data
 /source.docx
 /source.txt
+
+# TypeScript build cache
+*.tsbuildinfo

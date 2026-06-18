@@ -4,6 +4,7 @@
 // The server never imports this file.
 
 import { createEmptyOntology, normalizeOntology, type UserOntology } from "./ontology";
+import { createEmptyCompass, recompute, type CompassState } from "./compass-engine";
 import type { ProposalDashboard, ProposalGenerationDiagnostics } from "./proposal";
 
 const DB_NAME = "my-next-chapter-local";
@@ -11,6 +12,7 @@ const DB_VERSION = 1;
 const STORE = "ontology";
 const ACTIVE_KEY = "active";
 const PROPOSAL_KEY = "proposal";
+const COMPASS_KEY = "compass-v2";
 
 export interface CachedProposal {
   ontologyUpdatedAt: string;
@@ -40,6 +42,34 @@ export async function resetLocalOntology(): Promise<UserOntology> {
   await request(store.put(ontology, ACTIVE_KEY));
   await request(store.delete(PROPOSAL_KEY));
   return ontology;
+}
+
+// ── Vector compass state (the new engine) ───────────────────────
+// Source of truth lives here in IndexedDB; the server only computes and returns.
+export async function loadCompassState(nowISO: string): Promise<CompassState> {
+  const db = await openDb();
+  const stored = await request<CompassState | undefined>(
+    db.transaction(STORE, "readonly").objectStore(STORE).get(COMPASS_KEY),
+  );
+  if (stored && Array.isArray(stored.beads) && Array.isArray(stored.axes)) {
+    // Recompute on load so derived fields (M, status) reflect current decay.
+    return recompute(stored, nowISO);
+  }
+  return createEmptyCompass(nowISO);
+}
+
+export async function saveCompassState(state: CompassState): Promise<void> {
+  const db = await openDb();
+  await request(
+    db.transaction(STORE, "readwrite").objectStore(STORE).put(state, COMPASS_KEY),
+  );
+}
+
+export async function resetCompassState(nowISO: string): Promise<CompassState> {
+  const fresh = createEmptyCompass(nowISO);
+  const db = await openDb();
+  await request(db.transaction(STORE, "readwrite").objectStore(STORE).put(fresh, COMPASS_KEY));
+  return fresh;
 }
 
 export async function loadCachedProposal(): Promise<CachedProposal | null> {

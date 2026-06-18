@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
-import { generateCompassAIReply } from "@/lib/compass-ai";
-import { normalizeOntology, updateOntologyFromInput } from "@/lib/ontology";
-import { buildProposalDashboard } from "@/lib/proposal";
+import {
+  addBeads,
+  createEmptyCompass,
+  recompute,
+  type CompassState,
+} from "@/lib/compass-engine";
+import { DEFAULT_AXES, extractBeads, induceAxes, synthesizeEssence } from "@/lib/compass-extract";
+import { extractBeadsHeuristic } from "@/lib/compass-fallback";
+import { deriveActions } from "@/lib/compass-actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Stateless calculator: text in → updated CompassState + actions out. The
+// client persists the state to IndexedDB (source of truth); we store nothing.
 export async function POST(req: Request) {
   let body: unknown;
   try {
@@ -15,36 +23,60 @@ export async function POST(req: Request) {
   }
 
   const input = readString(body, "input").trim();
-  if (!input) {
-    return NextResponse.json({ error: "missing input" }, { status: 400 });
-  }
-  if (input.length > 4000) {
-    return NextResponse.json({ error: "input too long" }, { status: 413 });
+  if (!input) return NextResponse.json({ error: "missing input" }, { status: 400 });
+  if (input.length > 4000) return NextResponse.json({ error: "input too long" }, { status: 413 });
+
+  const now = new Date().toISOString();
+  const seed = Date.now().toString(36);
+
+  // Load incoming state (or start fresh). Learn the axis space once, on the
+  // first message, then keep it stable so beads never need reprojection.
+  let state = normalizeCompass(readObject(body, "compass"), now);
+  let inducedAxes = false;
+  if (state.axes.length === 0) {
+    const induced = await induceAxes([input], now);
+    const axes = induced?.axes ?? DEFAULT_AXES;
+    inducedAxes = Boolean(induced);
+    state = createEmptyCompass(now, axes);
   }
 
-  const current = normalizeOntology(readObject(body, "ontology"));
-  const result = updateOntologyFromInput(current, input);
-  const aiReply = await generateCompassAIReply(result.ontology);
-  const assistantMessage = aiReply
-    ? { ...result.assistantMessage, text: aiReply.text }
-    : result.assistantMessage;
-  const ontology = {
-    ...result.ontology,
-    messages: result.ontology.messages.map((message) =>
-      message.id === result.assistantMessage.id ? assistantMessage : message,
-    ),
-  };
-  const dashboard = buildProposalDashboard(ontology);
+  // Extract beads: LLM if a key is set, deterministic heuristic otherwise.
+  const llm = await extractBeads(input, state.axes, now, seed);
+  const aiUsed = Boolean(llm);
+  const beads = llm?.beads ?? extractBeadsHeuristic(input, state.axes, now, seed);
+
+  let next = addBeads(state, beads, now);
+
+  // Compress the beads into one high-abstraction essence sentence once a real
+  // direction has formed (LLM only; otherwise keep the templated one-liner).
+  if (aiUsed && next.status !== "listening") {
+    const essence = await synthesizeEssence(next.beads, next.axes, next.compass.dir);
+    if (essence) {
+      next = { ...next, compass: { ...next.compass, oneLiner: essence } };
+    }
+  }
+
+  const actions = deriveActions(next, now);
 
   return NextResponse.json({
-    ontology,
-    assistantMessage,
-    dashboard,
+    compass: next,
+    actions,
     persistence: "local-first-no-server-write",
-    ai: aiReply
-      ? { used: true, provider: aiReply.provider, model: aiReply.model }
-      : { used: false, provider: "deterministic-fallback" },
+    ai: {
+      used: aiUsed,
+      provider: aiUsed ? "anthropic" : "deterministic-fallback",
+      model: llm?.model,
+      axisInduced: inducedAxes,
+      beadCount: beads.length,
+    },
   });
+}
+
+function normalizeCompass(raw: Record<string, unknown> | null, now: string): CompassState {
+  if (raw && Array.isArray(raw.beads) && Array.isArray(raw.axes)) {
+    return recompute(raw as unknown as CompassState, now);
+  }
+  return createEmptyCompass(now);
 }
 
 function readString(body: unknown, key: string): string {

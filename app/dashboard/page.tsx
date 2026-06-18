@@ -3,128 +3,46 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Wordmark } from "../components/Logo";
-import {
-  loadCachedProposal,
-  loadLocalOntology,
-  saveCachedProposal,
-} from "@/lib/local-ontology-store";
-import {
-  buildProposalDashboard,
-  type ProposalDashboard,
-  type ProposalGenerationDiagnostics,
-} from "@/lib/proposal";
-import { signalsByKind, type UserOntology } from "@/lib/ontology";
+import { loadCompassState, saveCompassState } from "@/lib/local-ontology-store";
+import { addBeads, type CompassState } from "@/lib/compass-engine";
+import { actionToBead, deriveActions, type CompassAction } from "@/lib/compass-actions";
+
+const STATUS_LABEL: Record<CompassState["status"], string> = {
+  listening: "듣는 중",
+  narrowing: "좁히는 중",
+  confirming: "확인하는 중",
+  executing: "실행 단계",
+};
 
 export default function DashboardPage() {
-  const [ontology, setOntology] = useState<UserOntology | null>(null);
-  const [aiDashboard, setAiDashboard] = useState<ProposalDashboard | null>(null);
-  const [diagnostics, setDiagnostics] = useState<ProposalGenerationDiagnostics | null>(null);
-  const [proposalLoading, setProposalLoading] = useState(false);
-  const [proposalError, setProposalError] = useState("");
+  const [compass, setCompass] = useState<CompassState | null>(null);
+  const [justMoved, setJustMoved] = useState<string>("");
 
   useEffect(() => {
-    loadLocalOntology().then(setOntology).catch(() => setOntology(null));
+    loadCompassState(new Date().toISOString()).then(setCompass).catch(() => setCompass(null));
   }, []);
 
-  const deterministicDashboard = useMemo(
-    () => (ontology ? buildProposalDashboard(ontology) : null),
-    [ontology],
+  const actions = useMemo(
+    () => (compass ? deriveActions(compass, new Date().toISOString()) : []),
+    [compass],
   );
-  const dashboard = aiDashboard ?? deterministicDashboard;
-  const compass = ontology?.compass;
 
-  useEffect(() => {
-    if (!ontology || ontology.compass.alignment < 50) return;
-    const currentOntology = ontology;
-    let cancelled = false;
+  function complete(action: CompassAction) {
+    if (!compass) return;
+    const now = new Date().toISOString();
+    const before = compass.displayAlignment;
+    const next = addBeads(compass, [actionToBead(action, now, Date.now().toString(36))], now);
+    setCompass(next);
+    void saveCompassState(next);
+    const delta = Math.round((next.displayAlignment - before) * 100);
+    setJustMoved(`‘${action.title}’ 완료 · 정렬도 ${delta >= 0 ? "+" : ""}${delta}%`);
+  }
 
-    async function loadProposal() {
-      const cached = await loadCachedProposal();
-      if (
-        cached?.ontologyUpdatedAt === currentOntology.updatedAt &&
-        cached.diagnostics.aiUsed
-      ) {
-        if (!cancelled) {
-          setAiDashboard(cached.dashboard);
-          setDiagnostics(cached.diagnostics);
-        }
-        return;
-      }
-
-      if (!cancelled) {
-        setProposalLoading(true);
-        setProposalError("");
-      }
-      try {
-        const response = await fetch("/api/proposal/generate", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ ontology: currentOntology }),
-        });
-        if (!response.ok) throw new Error("proposal request failed");
-        const data = await response.json();
-        const cachedProposal = {
-          ontologyUpdatedAt: currentOntology.updatedAt,
-          dashboard: data.dashboard as ProposalDashboard,
-          diagnostics: data.diagnostics as ProposalGenerationDiagnostics,
-        };
-        await saveCachedProposal(cachedProposal);
-        if (!cancelled) {
-          setAiDashboard(cachedProposal.dashboard);
-          setDiagnostics(cachedProposal.diagnostics);
-        }
-
-        const searchResponse = await fetch("/api/proposal/search", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ ontology: currentOntology }),
-        });
-        if (searchResponse.ok) {
-          const searchData = await searchResponse.json();
-          const searchDiagnostics =
-            searchData.diagnostics as ProposalGenerationDiagnostics;
-          if (
-            searchDiagnostics.webSearchUsed &&
-            Array.isArray(searchData.dashboard?.youtubeLinks) &&
-            searchData.dashboard.youtubeLinks.length
-          ) {
-            const mergedProposal = {
-              ontologyUpdatedAt: currentOntology.updatedAt,
-              dashboard: {
-                ...cachedProposal.dashboard,
-                youtubeLinks: searchData.dashboard.youtubeLinks,
-              } as ProposalDashboard,
-              diagnostics: {
-                ...cachedProposal.diagnostics,
-                webSearchUsed: true,
-                webSearchRequests: searchDiagnostics.webSearchRequests,
-                fallbackReason: undefined,
-              } as ProposalGenerationDiagnostics,
-            };
-            await saveCachedProposal(mergedProposal);
-            if (!cancelled) {
-              setAiDashboard(mergedProposal.dashboard);
-              setDiagnostics(mergedProposal.diagnostics);
-            }
-          } else if (!cancelled) {
-            setDiagnostics({
-              ...cachedProposal.diagnostics,
-              fallbackReason: searchDiagnostics.fallbackReason,
-            });
-          }
-        }
-      } catch {
-        if (!cancelled) setProposalError("Claude 제안을 불러오지 못해 기본 제안을 보여주고 있어요.");
-      } finally {
-        if (!cancelled) setProposalLoading(false);
-      }
-    }
-
-    void loadProposal();
-    return () => {
-      cancelled = true;
-    };
-  }, [ontology]);
+  const pct = compass ? Math.round(compass.displayAlignment * 100) : 0;
+  const records = useMemo(
+    () => (compass ? [...compass.beads].reverse().slice(0, 8) : []),
+    [compass],
+  );
 
   return (
     <main className="min-h-dvh bg-cream">
@@ -146,23 +64,33 @@ export default function DashboardPage() {
         <div className="grid gap-5 lg:grid-cols-[24rem_minmax(0,1fr)]">
           <aside className="space-y-5">
             <div className="rounded-[1.25rem] border border-line bg-surface p-6 shadow-soft">
-              <p className="text-sm font-semibold text-clay">Compass</p>
-              <h1 className="mt-2 font-display text-3xl font-bold text-ink">살아있는 대시보드</h1>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-clay">Compass</p>
+                {compass && (
+                  <span className="rounded-full bg-cream-2 px-2.5 py-1 text-xs font-medium text-ink-soft">
+                    {STATUS_LABEL[compass.status]}
+                  </span>
+                )}
+              </div>
+              <h1 className="mt-2 font-display text-3xl font-bold text-ink">살아있는 나침반</h1>
               <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                채팅 기록이 로컬 온톨로지로 쌓이고, 정렬도 50% 이상부터 액션과 콘텐츠 추천이 열립니다.
+                채팅 기록이 벡터 구슬로 쌓이고, 코사인 정렬도가 실시간으로 방향을 가리킵니다.
               </p>
               <div className="mt-6">
                 <div className="flex items-end gap-2">
-                  <span className="font-display text-6xl font-bold text-clay">{compass?.alignment ?? 0}</span>
+                  <span className="font-display text-6xl font-bold text-clay">{pct}</span>
                   <span className="pb-2 text-ink-soft">%</span>
                 </div>
                 <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-cream-2">
-                  <div className="h-full rounded-full bg-clay" style={{ width: `${compass?.alignment ?? 0}%` }} />
+                  <div className="h-full rounded-full bg-clay transition-all duration-500" style={{ width: `${pct}%` }} />
                 </div>
               </div>
               <p className="mt-5 text-sm leading-relaxed text-ink-soft">
-                {compass?.oneLine ?? "아직 기록이 없습니다. 채팅에서 첫 문장을 남겨주세요."}
+                {compass?.compass.oneLiner ?? "아직 기록이 없습니다. 채팅에서 첫 문장을 남겨주세요."}
               </p>
+              {justMoved && (
+                <p className="mt-3 rounded-xl bg-sage-tint px-3 py-2 text-xs font-medium text-sage">{justMoved}</p>
+              )}
               <Link
                 href="/chat"
                 className="mt-5 flex w-full items-center justify-center rounded-full bg-clay px-5 py-3 text-sm font-semibold text-white"
@@ -175,82 +103,69 @@ export default function DashboardPage() {
           </aside>
 
           <div className="space-y-5">
-            <Section title="짧은 유저 써머리">
-              <ProposalStatus
-                loading={proposalLoading}
-                diagnostics={diagnostics}
-                error={proposalError}
-              />
-              <p className="text-sm leading-relaxed text-ink-soft">
-                {dashboard?.userSummary ?? "아직 요약할 기록이 없습니다."}
-              </p>
+            <Section title="학습된 축 (페르소나 아님 · 기록에서 도출)">
+              {compass?.axes.length ? (
+                <div className="space-y-3">
+                  {compass.axes.map((axis, i) => (
+                    <AxisRow
+                      key={axis.id}
+                      name={axis.name}
+                      posPole={axis.posPole}
+                      negPole={axis.negPole}
+                      value={compass.compass.dir[i] ?? 0}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Gate message="첫 기록이 들어오면 이 사람만의 방향 축을 도출합니다." />
+              )}
             </Section>
 
-            <Section title="날짜별 액션 아이템">
-              {dashboard?.ready ? (
-                <div className="grid gap-3 md:grid-cols-3">
-                  {dashboard.actions.map((a) => (
-                    <div key={a.id} className="rounded-2xl border border-line bg-cream p-4">
-                      <p className="text-xs font-semibold text-clay">{a.dateLabel}</p>
+            <Section title="날짜별 액션 아이템 (완료하면 나침반이 움직입니다)">
+              {actions.length ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {actions.map((a) => (
+                    <div key={a.id} className="flex flex-col rounded-2xl border border-line bg-cream p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-clay">
+                          {a.kind === "probe" ? "검증 실험" : "방향 강화"}
+                        </span>
+                        <span className="text-xs font-medium text-sage">
+                          예상 {a.expectedDelta >= 0 ? "+" : ""}
+                          {Math.round(a.expectedDelta * 100)}%
+                        </span>
+                      </div>
                       <p className="mt-2 font-semibold leading-snug text-ink">{a.title}</p>
-                      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{a.detail}</p>
+                      <p className="mt-2 flex-1 text-xs leading-relaxed text-ink-soft">{a.detail}</p>
+                      <button
+                        onClick={() => complete(a)}
+                        className="mt-3 rounded-full bg-clay px-3 py-2 text-xs font-semibold text-white transition hover:bg-clay-deep"
+                      >
+                        완료로 표시
+                      </button>
                     </div>
                   ))}
                 </div>
               ) : (
-                <Gate message={dashboard?.gateMessage} />
+                <Gate message="기록이 더 쌓이면 검증·강화 액션이 열립니다." />
               )}
             </Section>
 
-            <Section title="추천 유튜브 링크">
-              {dashboard?.ready ? (
-                <div className="grid gap-3 md:grid-cols-3">
-                  {dashboard.youtubeLinks.map((link) => (
-                    <a
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-2xl border border-line bg-surface p-4 transition hover:border-clay hover:shadow-soft"
-                    >
-                      <p className="font-semibold leading-snug text-ink">{link.title}</p>
-                      {link.channel && (
-                        <p className="mt-1 text-xs font-medium text-clay">{link.channel}</p>
-                      )}
-                      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{link.why}</p>
-                    </a>
-                  ))}
-                </div>
-              ) : (
-                <Gate message={dashboard?.gateMessage} />
-              )}
-            </Section>
-
-            <Section title="나의 기록 로그">
-              {dashboard?.recordLog.length ? (
+            <Section title="나의 기록 로그 (구슬)">
+              {records.length ? (
                 <div className="space-y-3">
-                  {dashboard.recordLog.map((log) => (
-                    <div key={log.id} className="flex gap-3 rounded-2xl bg-cream px-4 py-3">
-                      <span className="w-14 shrink-0 text-xs font-semibold text-clay">{log.dateLabel}</span>
-                      <p className="text-sm leading-relaxed text-ink-soft">{log.text}</p>
+                  {records.map((b) => (
+                    <div key={b.id} className="flex gap-3 rounded-2xl bg-cream px-4 py-3">
+                      <span className="w-12 shrink-0 text-xs font-semibold text-clay">
+                        {b.source === "market" ? "시장" : b.source === "action" ? "행동" : "기록"}
+                      </span>
+                      <p className="text-sm leading-relaxed text-ink-soft">{b.what}</p>
                     </div>
                   ))}
                 </div>
               ) : (
                 <p className="text-sm text-ink-soft">아직 기록이 없습니다.</p>
               )}
-            </Section>
-
-            <Section title="온톨로지 신호">
-              <div className="grid gap-3 md:grid-cols-2">
-                <SignalList title="자산" signals={ontology ? signalsByKind(ontology, "asset") : []} />
-                <SignalList title="시장/행동" signals={ontology ? [
-                  ...signalsByKind(ontology, "market"),
-                  ...signalsByKind(ontology, "action"),
-                ] : []} />
-                <SignalList title="니즈" signals={ontology ? signalsByKind(ontology, "need") : []} />
-                <SignalList title="주의점" signals={ontology ? signalsByKind(ontology, "blocker") : []} />
-              </div>
             </Section>
           </div>
         </div>
@@ -259,35 +174,33 @@ export default function DashboardPage() {
   );
 }
 
-function ProposalStatus({
-  loading,
-  diagnostics,
-  error,
+function AxisRow({
+  name,
+  posPole,
+  negPole,
+  value,
 }: {
-  loading: boolean;
-  diagnostics: ProposalGenerationDiagnostics | null;
-  error: string;
+  name: string;
+  posPole: string;
+  negPole: string;
+  value: number;
 }) {
-  if (loading) {
-    return (
-      <p className="mb-3 rounded-xl bg-sage-tint px-3 py-2 text-xs font-medium text-sage">
-        Claude가 액션을 만들고 실제 콘텐츠를 검색하고 있어요.
-      </p>
-    );
-  }
-  if (error) {
-    return <p className="mb-3 text-xs text-clay-deep">{error}</p>;
-  }
-  if (!diagnostics) return null;
-  const text = diagnostics.aiUsed
-    ? diagnostics.webSearchUsed
-      ? `Claude + 웹서치 · 실제 검색 ${diagnostics.webSearchRequests}회`
-      : "Claude 제안 · 웹서치 미사용"
-    : "기본 제안";
+  const pct = Math.round(((value + 1) / 2) * 100); // -1..1 → 0..100
   return (
-    <p className="mb-3 inline-flex rounded-full bg-cream-2 px-3 py-1.5 text-xs font-medium text-ink-soft">
-      {text}
-    </p>
+    <div className="rounded-2xl bg-cream p-4">
+      <p className="text-sm font-semibold text-ink">{name}</p>
+      <div className="mt-2 flex items-center justify-between text-xs text-ink-faint">
+        <span>{negPole}</span>
+        <span>{posPole}</span>
+      </div>
+      <div className="relative mt-1.5 h-2 rounded-full bg-cream-2">
+        <div className="absolute inset-y-0 left-1/2 w-px bg-line" />
+        <div
+          className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-clay shadow-sm"
+          style={{ left: `${pct}%` }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -300,19 +213,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Gate({ message }: { message?: string }) {
+function Gate({ message }: { message: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-line bg-cream px-4 py-4 text-sm leading-relaxed text-ink-soft">
-      {message ?? "정렬도가 50%를 넘으면 추천이 열립니다."}
+      {message}
     </div>
   );
 }
 
-function MetricGrid({ compass }: { compass: UserOntology["compass"] | undefined }) {
+function MetricGrid({ compass }: { compass: CompassState | null }) {
   const items = [
-    ["명료도", compass?.clarity ?? 0],
-    ["확신도", compass?.confidence ?? 0],
-    ["근거", compass?.evidenceCount ?? 0],
+    ["확신도", compass ? Math.round(compass.compass.confidence * 100) : 0],
+    ["방향 강도", compass ? Math.round(compass.compass.magnitude * 100) : 0],
+    ["구슬", compass ? compass.beads.length : 0],
   ] as const;
   return (
     <div className="grid grid-cols-3 gap-2">
@@ -322,31 +235,6 @@ function MetricGrid({ compass }: { compass: UserOntology["compass"] | undefined 
           <p className="mt-1 font-display text-2xl font-bold text-ink">{value}</p>
         </div>
       ))}
-    </div>
-  );
-}
-
-function SignalList({
-  title,
-  signals,
-}: {
-  title: string;
-  signals: ReturnType<typeof signalsByKind>;
-}) {
-  return (
-    <div className="rounded-2xl bg-cream p-4">
-      <p className="text-sm font-semibold text-ink">{title}</p>
-      {signals.length ? (
-        <ul className="mt-3 space-y-2">
-          {signals.slice(0, 3).map((s) => (
-            <li key={s.id} className="text-sm leading-relaxed text-ink-soft">
-              {s.label}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-3 text-sm text-ink-faint">아직 신호 없음</p>
-      )}
     </div>
   );
 }

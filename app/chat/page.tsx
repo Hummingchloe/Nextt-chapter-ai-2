@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { LogoMark, Wordmark } from "../components/Logo";
-import { loadLocalOntology, resetLocalOntology, saveLocalOntology } from "@/lib/local-ontology-store";
-import { buildProposalDashboard, type ProposalDashboard } from "@/lib/proposal";
-import type { UserOntology } from "@/lib/ontology";
+import BeadCompass from "../components/BeadCompass";
+import {
+  loadCompassState,
+  resetCompassState,
+  saveCompassState,
+} from "@/lib/local-ontology-store";
+import type { CompassState } from "@/lib/compass-engine";
 
 const STARTERS = [
   "요즘 가장 자주 드는 생각은...",
@@ -13,42 +17,67 @@ const STARTERS = [
   "오늘 한 작은 행동은...",
 ];
 
+interface Bubble {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+}
+
+const STATUS_LABEL: Record<CompassState["status"], string> = {
+  listening: "듣는 중",
+  narrowing: "좁히는 중",
+  confirming: "확인하는 중",
+  executing: "실행 단계",
+};
+
+function assistantText(state: CompassState): string {
+  const pct = Math.round(state.displayAlignment * 100);
+  switch (state.status) {
+    case "executing":
+      return `방향이 또렷해졌어요(정렬도 ${pct}%). 대시보드에서 오늘의 액션을 확인하세요.`;
+    case "confirming":
+      return `방향 윤곽이 잡혀요(정렬도 ${pct}%). ${state.compass.oneLiner}`;
+    case "narrowing":
+      return `여러 방향이 보여요. 한 축으로 좁혀가 볼게요. ${state.compass.oneLiner}`;
+    default:
+      return `기록했어요. 아직 방향을 듣는 단계예요. ${state.compass.oneLiner}`;
+  }
+}
+
 export default function ChatPage() {
-  const [ontology, setOntology] = useState<UserOntology | null>(null);
+  const [compass, setCompass] = useState<CompassState | null>(null);
+  const [messages, setMessages] = useState<Bubble[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    loadLocalOntology()
-      .then(setOntology)
-      .catch(() => {
-        const fresh = resetLocalOntology();
-        void fresh.then(setOntology);
-      });
+    loadCompassState(new Date().toISOString())
+      .then(setCompass)
+      .catch(() => resetCompassState(new Date().toISOString()).then(setCompass));
   }, []);
-
-  const dashboard: ProposalDashboard | null = useMemo(
-    () => (ontology ? buildProposalDashboard(ontology) : null),
-    [ontology],
-  );
 
   async function send() {
     const text = input.trim();
-    if (!ontology || !text || loading) return;
+    if (!compass || !text || loading) return;
     setLoading(true);
     setError("");
+    setMessages((m) => [...m, { id: `u-${Date.now()}`, role: "user", text }]);
     try {
       const res = await fetch("/api/compass/compute", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ontology, input: text }),
+        body: JSON.stringify({ compass, input: text }),
       });
       if (!res.ok) throw new Error("compute failed");
       const data = await res.json();
-      const next = data.ontology as UserOntology;
-      setOntology(next);
-      await saveLocalOntology(next);
+      const next = data.compass as CompassState;
+      setCompass(next);
+      await saveCompassState(next);
+      setMessages((m) => [
+        ...m,
+        { id: `a-${Date.now()}`, role: "assistant", text: assistantText(next) },
+      ]);
       setInput("");
     } catch {
       setError("계산 중 문제가 있었어요. 잠시 후 다시 시도해 주세요.");
@@ -58,9 +87,10 @@ export default function ChatPage() {
   }
 
   async function reset() {
-    if (!confirm("이 브라우저에 저장된 로컬 온톨로지를 새로 시작할까요?")) return;
-    const fresh = await resetLocalOntology();
-    setOntology(fresh);
+    if (!confirm("이 브라우저에 저장된 나침반을 새로 시작할까요?")) return;
+    const fresh = await resetCompassState(new Date().toISOString());
+    setCompass(fresh);
+    setMessages([]);
     setInput("");
     setError("");
   }
@@ -89,7 +119,7 @@ export default function ChatPage() {
                 <LogoMark className="h-9 w-9" />
                 <div>
                   <h1 className="font-display text-xl font-bold text-ink">Compass Chat</h1>
-                  <p className="text-sm text-ink-soft">기록하면 로컬 온톨로지가 갱신됩니다.</p>
+                  <p className="text-sm text-ink-soft">기록하면 벡터 나침반이 갱신됩니다.</p>
                 </div>
               </div>
               <button
@@ -102,18 +132,18 @@ export default function ChatPage() {
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
-            {!ontology ? (
-              <div className="rounded-2xl bg-cream-2 p-4 text-sm text-ink-soft">로컬 온톨로지를 불러오는 중...</div>
-            ) : ontology.messages.length === 0 ? (
+            {!compass ? (
+              <div className="rounded-2xl bg-cream-2 p-4 text-sm text-ink-soft">나침반을 불러오는 중...</div>
+            ) : messages.length === 0 ? (
               <div className="max-w-xl rounded-2xl bg-cream-2 p-5 text-ink">
                 <p className="font-semibold">처음이라면 여기서 시작하면 됩니다.</p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  요즘 머릿속에 자주 떠오르는 고민, 오늘 한 작은 행동, 누가 물어본 문제를 그냥 적어주세요.
-                  서버에는 저장하지 않고 이 브라우저의 IndexedDB에 쌓습니다.
+                  요즘 떠오르는 고민, 오늘 한 작은 행동, 누가 물어본 문제를 그냥 적어주세요.
+                  글은 벡터 신호(구슬)로 바뀌어 이 브라우저에만 쌓입니다.
                 </p>
               </div>
             ) : (
-              ontology.messages.map((m) => (
+              messages.map((m) => (
                 <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
                     className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
@@ -146,7 +176,7 @@ export default function ChatPage() {
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="그냥 적어주세요. 예: 오늘 지인이 AI로 안내문 만드는 걸 물어봤고, 이걸 작은 서비스로 만들 수 있을지 궁금했어요."
+                placeholder="그냥 적어주세요. 예: 오늘 지인이 AI로 안내문 만드는 걸 물어봤고, 작은 서비스로 만들 수 있을지 궁금했어요."
                 className="min-h-20 flex-1 resize-none rounded-2xl border border-line bg-cream px-4 py-3 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-clay focus:bg-surface"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) void send();
@@ -154,7 +184,7 @@ export default function ChatPage() {
               />
               <button
                 onClick={send}
-                disabled={!input.trim() || loading || !ontology}
+                disabled={!input.trim() || loading || !compass}
                 className="w-20 rounded-2xl bg-clay px-4 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-clay-deep disabled:opacity-50"
               >
                 {loading ? "계산" : "보내기"}
@@ -164,46 +194,56 @@ export default function ChatPage() {
         </div>
 
         <aside className="space-y-4">
-          <ScoreCard ontology={ontology} />
+          <EssenceCard compass={compass} />
           <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
-            <p className="text-sm font-semibold text-ink">다음 판단</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              {dashboard?.gateMessage ?? "기록을 불러오는 중입니다."}
+            <p className="text-sm font-semibold text-ink">나의 구슬 지도</p>
+            <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+              기록이 방향 벡터(구슬)로 쌓이고, 바늘은 무게중심을 가리켜요.
             </p>
-            <Link
-              href="/dashboard"
-              className="mt-4 flex w-full items-center justify-center rounded-full bg-sage px-4 py-3 text-sm font-semibold text-white"
-            >
-              대시보드 보기
-            </Link>
+            <div className="mt-3">
+              <BeadCompass state={compass} />
+            </div>
           </div>
           <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
             <p className="text-sm font-semibold text-ink">로컬 우선 저장</p>
             <p className="mt-2 text-xs leading-relaxed text-ink-soft">
-              원문 채팅과 온톨로지는 이 브라우저에 저장됩니다. Vercel API는 입력을 받아 Compass를 계산하고 결과만 돌려줍니다.
+              구슬·축·나침반은 이 브라우저(IndexedDB)에 저장됩니다. 서버는 입력을 받아 벡터를 추출하고 결과만 돌려줘요.
             </p>
           </div>
+          <Link
+            href="/dashboard"
+            className="flex w-full items-center justify-center rounded-full bg-sage px-4 py-3 text-sm font-semibold text-white"
+          >
+            대시보드 보기
+          </Link>
         </aside>
       </section>
     </main>
   );
 }
 
-function ScoreCard({ ontology }: { ontology: UserOntology | null }) {
-  const compass = ontology?.compass;
+function EssenceCard({ compass }: { compass: CompassState | null }) {
+  const pct = compass ? Math.round(compass.displayAlignment * 100) : 0;
   return (
     <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
-      <p className="text-sm font-semibold text-ink">현재 정렬도</p>
-      <div className="mt-3 flex items-end gap-2">
-        <span className="font-display text-5xl font-bold text-clay">{compass?.alignment ?? 0}</span>
-        <span className="pb-2 text-sm text-ink-soft">%</span>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-clay">지금의 나 — 한 문장</p>
+        {compass && (
+          <span className="rounded-full bg-cream-2 px-2.5 py-1 text-xs font-medium text-ink-soft">
+            {STATUS_LABEL[compass.status]}
+          </span>
+        )}
       </div>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-cream-2">
-        <div className="h-full rounded-full bg-clay" style={{ width: `${compass?.alignment ?? 0}%` }} />
-      </div>
-      <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-        {compass?.oneLine ?? "아직 계산 전입니다."}
+      <p className="mt-3 font-display text-lg font-bold leading-snug text-ink">
+        {compass?.compass.oneLiner ?? "아직 방향을 듣는 중이에요."}
       </p>
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-cream-2">
+          <div className="h-full rounded-full bg-clay transition-all duration-500" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="text-sm font-semibold text-clay">{pct}%</span>
+      </div>
+      <p className="mt-1.5 text-xs text-ink-faint">정렬도 — 기록이 쌓일수록 또렷해져요</p>
     </div>
   );
 }
