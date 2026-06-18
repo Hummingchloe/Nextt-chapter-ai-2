@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { getLocalSession, saveLocalSession } from "@/lib/session-client";
 
-// Line icons (stroke = currentColor) matching the warm aesthetic.
-function Icon({ name }: { name: string }) {
+function Icon({ name }: { name: "chat" | "dashboard" }) {
   const common = {
     width: 22,
     height: 22,
@@ -17,96 +15,53 @@ function Icon({ name }: { name: string }) {
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
   };
-  switch (name) {
-    case "home":
-      return (
-        <svg {...common}>
-          <path d="M4 11.5 12 5l8 6.5" />
-          <path d="M6 10.5V19h12v-8.5" />
-        </svg>
-      );
-    case "diagnose":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="12" r="8" />
-          <path d="M15 9l-2.5 4.5L8 16l2.5-4.5L15 9z" />
-        </svg>
-      );
-    case "report":
-      return (
-        <svg {...common}>
-          <path d="M7 3.5h7L18 7v13.5H7z" />
-          <path d="M14 3.5V7h4" />
-          <path d="M9.5 12h6M9.5 15.5h6" />
-        </svg>
-      );
-    case "note":
-      return (
-        <svg {...common}>
-          <path d="M6 4h11a1 1 0 0 1 1 1v15l-3-2-3 2V4" />
-          <path d="M6 4a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h2" />
-        </svg>
-      );
-    case "weekly":
-      return (
-        <svg {...common}>
-          <rect x="4" y="5" width="16" height="15" rx="2" />
-          <path d="M4 9h16M8 3.5v3M16 3.5v3" />
-          <path d="M12 13v2.2l1.6 1" />
-        </svg>
-      );
-    default:
-      return null;
+
+  if (name === "chat") {
+    return (
+      <svg {...common}>
+        <path d="M5 5.5h14v9.5H9l-4 3.5z" />
+        <path d="M8.5 9.5h7M8.5 12.5h4" />
+      </svg>
+    );
   }
+
+  return (
+    <svg {...common}>
+      <path d="M4.5 19.5v-15h15v15z" />
+      <path d="M8 15.5v-4M12 15.5V8M16 15.5v-6" />
+    </svg>
+  );
 }
 
 export default function AppTabBar() {
   const pathname = usePathname() || "/";
-  const [sid, setSid] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const hidden = isHidden(pathname);
 
   useEffect(() => {
-    // Prefer a session id present in the current URL; remember it.
-    const m = pathname.match(/\/(?:result|next|home)\/([^/]+)/);
-    if (m?.[1]) {
-      saveLocalSession(m[1]);
-      setSid(m[1]);
-    } else {
-      setSid(getLocalSession()?.sessionId ?? null);
-    }
-    setMounted(true);
-  }, [pathname]);
-
-  // Reserve space so the fixed bar never covers page content.
-  useEffect(() => {
-    const visible = mounted && !!sid && !isHidden(pathname);
-    document.body.style.paddingBottom = visible ? "5.5rem" : "";
+    document.body.style.paddingBottom = hidden ? "" : "5.5rem";
     return () => {
       document.body.style.paddingBottom = "";
     };
-  }, [mounted, sid, pathname]);
+  }, [hidden]);
 
-  if (!mounted || !sid || isHidden(pathname)) return null;
+  if (hidden) return null;
 
   const tabs = [
-    { key: "home", label: "홈", icon: "home", href: `/home/${sid}` },
-    { key: "diagnose", label: "진단", icon: "diagnose", href: "/start" },
-    { key: "report", label: "리포트", icon: "report", href: "/reports" },
-    { key: "note", label: "노트", icon: "note", href: `/next/${sid}` },
-    { key: "weekly", label: "주간", icon: "weekly", href: `/next/${sid}/week` },
+    { key: "chat", label: "채팅", icon: "chat" as const, href: "/chat" },
+    { key: "dashboard", label: "대시보드", icon: "dashboard" as const, href: "/dashboard" },
   ];
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
-      <div className="flex w-full max-w-md items-stretch justify-between gap-1 rounded-[1.5rem] border border-line bg-surface/90 p-1.5 shadow-lift backdrop-blur-md">
+      <div className="grid w-full max-w-sm grid-cols-2 gap-1 rounded-[1.5rem] border border-line bg-surface/90 p-1.5 shadow-lift backdrop-blur-md">
         {tabs.map((t) => {
-          const active = isActive(t.key, pathname, sid);
+          const active = isActive(t.key, pathname);
           return (
             <Link
               key={t.key}
               href={t.href}
               aria-current={active ? "page" : undefined}
-              className={`flex flex-1 flex-col items-center gap-1 rounded-2xl py-2 text-[0.7rem] font-medium transition ${
+              className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                 active
                   ? "bg-clay-tint text-clay-deep"
                   : "text-ink-faint hover:text-clay"
@@ -123,29 +78,13 @@ export default function AppTabBar() {
 }
 
 function isHidden(pathname: string): boolean {
-  // Distraction-free during the diagnostic questions and note entry.
-  if (pathname === "/diagnostic") return true;
-  if (/^\/next\/[^/]+\/note$/.test(pathname)) return true;
+  if (pathname === "/admin") return true;
+  if (pathname.startsWith("/api")) return true;
   return false;
 }
 
-function isActive(key: string, pathname: string, sid: string): boolean {
-  switch (key) {
-    case "home":
-      return pathname.startsWith("/home");
-    case "diagnose":
-      return pathname === "/start" || pathname === "/diagnostic";
-    case "report":
-      return pathname.startsWith("/reports") || pathname.startsWith("/result");
-    case "note":
-      return (
-        pathname.startsWith(`/next/${sid}`) &&
-        !pathname.endsWith("/week") &&
-        !pathname.endsWith("/note")
-      );
-    case "weekly":
-      return pathname.endsWith("/week");
-    default:
-      return false;
-  }
+function isActive(key: string, pathname: string): boolean {
+  if (key === "chat") return pathname === "/" || pathname.startsWith("/chat");
+  if (key === "dashboard") return pathname.startsWith("/dashboard");
+  return false;
 }

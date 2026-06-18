@@ -3,13 +3,13 @@ import "./globals.css";
 import AppTabBar from "./components/AppTabBar";
 
 export const metadata: Metadata = {
-  title: "My Next Chapter AI — 내가 다시 시작할 수 있는 일의 방향 찾기",
+  title: "My Next Chapter AI — Compass Chat",
   description:
-    "다시 시작하려는 사람을 위한 AI 진단. 초기·예비 창업자, 이민자 엄마 누구든 15분이면, 내 경험으로 시작할 수 있는 일의 방향 하나가 선명해져요.",
+    "채팅 기록으로 로컬 온톨로지를 만들고, 대시보드에서 정렬도와 다음 행동을 확인하는 Compass Chat.",
   openGraph: {
     title: "My Next Chapter AI",
     description:
-      "내 경험으로 다시 시작할 수 있는 일의 방향 하나를, AI와 함께 찾아보세요.",
+      "채팅에 기록하면 Compass가 갱신되고 대시보드에서 다음 행동을 확인할 수 있어요.",
     type: "website",
   },
 };

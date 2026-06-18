@@ -1,7 +1,6 @@
 import Link from "next/link";
 import TrackView from "./components/TrackView";
 import { LogoMark, Wordmark } from "./components/Logo";
-import ReturningBanner from "./components/ReturningBanner";
 
 const painPoints = [
   "나는 도대체 무슨 일로 다시 돈을 벌 수 있지?",
@@ -70,9 +69,6 @@ export default function LandingPage() {
       {/* ── Hero ────────────────────────────────────────── */}
       <section className="bg-warm-glow relative">
         <div className="mx-auto max-w-3xl px-6 pb-20 pt-12 text-center sm:pt-20">
-          <div className="flex flex-col items-center">
-            <ReturningBanner />
-          </div>
           <p className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 px-4 py-1.5 text-sm text-ink-soft shadow-sm backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-sage" />
             다시 시작하려는 사람을 위한 Compass Chat
@@ -128,13 +124,13 @@ export default function LandingPage() {
         <div className="pointer-events-none mx-auto -mb-16 max-w-md px-6">
           <div className="animate-float rounded-3xl border border-line bg-surface/90 p-5 shadow-lift backdrop-blur">
             <p className="text-xs font-semibold uppercase tracking-wider text-clay">
-              진단 결과 미리보기
+              대시보드 미리보기
             </p>
             <p className="mt-2 font-display text-lg font-bold text-ink">
-              “당신에게 가장 잘 맞는 1순위 방향”
+              “지금 정렬도와 다음 행동”
             </p>
             <p className="mt-1 text-sm text-ink-soft">
-              1:1 가이드 서비스 · 이번 주 첫 행동 1개까지 정리해드려요.
+              오늘의 액션 · 추천 링크 · 나의 기록 로그가 한 화면에 정리돼요.
             </p>
           </div>
         </div>
@@ -171,32 +167,32 @@ export default function LandingPage() {
         <div className="mx-auto max-w-4xl px-6">
           <div className="text-center">
             <p className="text-sm font-semibold uppercase tracking-wider text-clay">
-              15분 뒤, 당신이 받는 것
+              채팅 뒤, 대시보드에 쌓이는 것
             </p>
             <h2 className="mt-3 font-display text-2xl font-bold text-ink sm:text-3xl">
-              막연함 대신, 손에 잡히는 한 페이지
+              막연함 대신, 살아있는 상태판
             </h2>
           </div>
 
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             <ResultCard
               title="나의 강점 요약"
-              body="흩어진 경험에서 ‘이미 잘하고 있던 것’을 3~4가지로 비춰드려요."
+              body="채팅 기록에서 반복되는 경험과 자산 신호를 요약해요."
               accent="clay"
             />
             <ResultCard
-              title="가능한 일의 방향 3가지"
-              body="당신의 경험·시간·성향에 맞는 현실적인 방향 세 가지."
+              title="현재 정렬도"
+              body="맥락이 충분한지 보고, 추천보다 질문이 먼저인지 판단해요."
               accent="sage"
             />
             <ResultCard
-              title="가장 현실적인 1순위"
-              body="그중 지금 가장 작게 시작할 수 있는 단 하나를 골라드려요."
+              title="날짜별 액션 아이템"
+              body="정렬도 50% 이상부터 오늘, 내일, 3일차 행동을 제안해요."
               accent="clay"
             />
             <ResultCard
-              title="첫 오퍼 & 이번 주 첫 행동"
-              body="첫 손님에게 보낼 제안 초안과, 오늘 할 수 있는 작은 한 걸음까지."
+              title="추천 콘텐츠와 기록 로그"
+              body="추천 유튜브 링크와 내가 남긴 기록 흐름을 같이 보여줘요."
               accent="sage"
             />
           </div>
@@ -285,8 +281,8 @@ export default function LandingPage() {
                 {[
                   "오늘의 가장 작은 행동 1개",
                   "2~3분이면 끝나는 짧은 기록",
-                  "AI의 따뜻한 한 줄 피드백",
-                  "한 주를 돌아보는 주간 회고",
+                  "현재 정렬도 자동 갱신",
+                  "대시보드 추천 상태 확인",
                 ].map((t) => (
                   <li key={t} className="flex items-center gap-2.5">
                     <span className="text-clay">✓</span>
