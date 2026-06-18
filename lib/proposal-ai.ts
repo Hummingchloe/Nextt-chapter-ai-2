@@ -26,6 +26,11 @@ export interface ProposalAIResult {
   diagnostics: ProposalGenerationDiagnostics;
 }
 
+interface ProposalCallAttempt {
+  result: ProposalAIResult | null;
+  error?: string;
+}
+
 export async function generateProposalWithAI(
   ontology: UserOntology,
 ): Promise<ProposalAIResult> {
@@ -44,9 +49,11 @@ export async function generateProposalWithAI(
     };
   }
 
-  const claudeOnly = await callProposalClaude(ontology, apiKey, false);
+  const claudeAttempt = await callProposalClaude(ontology, apiKey, false);
+  const claudeOnly = claudeAttempt.result;
   if (claudeOnly) {
-    const searched = await callProposalClaude(ontology, apiKey, true);
+    const searchAttempt = await callProposalClaude(ontology, apiKey, true);
+    const searched = searchAttempt.result;
     if (searched?.diagnostics.webSearchUsed) {
       return {
         dashboard: {
@@ -61,7 +68,9 @@ export async function generateProposalWithAI(
       ...claudeOnly,
       diagnostics: {
         ...claudeOnly.diagnostics,
-        fallbackReason: searched ? "web_search_no_results" : "web_search_unavailable",
+        fallbackReason: searched
+          ? "web_search_no_results"
+          : `web_search_unavailable:${searchAttempt.error ?? "unknown"}`,
       },
     };
   }
@@ -73,7 +82,7 @@ export async function generateProposalWithAI(
       provider: "deterministic",
       webSearchUsed: false,
       webSearchRequests: 0,
-      fallbackReason: "anthropic_request_failed",
+      fallbackReason: `anthropic_request_failed:${claudeAttempt.error ?? "unknown"}`,
     },
   };
 }
@@ -82,7 +91,7 @@ async function callProposalClaude(
   ontology: UserOntology,
   apiKey: string,
   withWebSearch: boolean,
-): Promise<ProposalAIResult | null> {
+): Promise<ProposalCallAttempt> {
   const model = anthropicModel();
   const deterministic = buildProposalDashboard(ontology);
   const context = buildContext(ontology);
@@ -137,12 +146,17 @@ async function callProposalClaude(
       }),
       signal: AbortSignal.timeout(withWebSearch ? 12000 : 14000),
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+      const errorType =
+        typeof errorBody?.error?.type === "string" ? errorBody.error.type : "unknown";
+      return { result: null, error: `http_${response.status}_${errorType}` };
+    }
 
     const data = await response.json();
     const text = collectText(data?.content);
     const parsed = extractJson(text) as RawProposal | null;
-    if (!parsed) return null;
+    if (!parsed) return { result: null, error: "json_parse_failed" };
 
     const webResults = collectWebResults(data?.content);
     const actions = parseActions(parsed.actions);
@@ -156,24 +170,27 @@ async function callProposalClaude(
     const webSearchRequests = Number(data?.usage?.server_tool_use?.web_search_requests ?? 0);
 
     return {
-      dashboard: {
-        ...deterministic,
-        actions: actions.length ? actions : deterministic.actions,
-        youtubeLinks,
-        userSummary,
-        source: "claude",
-        generatedAt: new Date().toISOString(),
-      },
-      diagnostics: {
-        aiUsed: true,
-        provider: "anthropic",
-        model,
-        webSearchUsed: webSearchRequests > 0 && webResults.length > 0,
-        webSearchRequests,
+      result: {
+        dashboard: {
+          ...deterministic,
+          actions: actions.length ? actions : deterministic.actions,
+          youtubeLinks,
+          userSummary,
+          source: "claude",
+          generatedAt: new Date().toISOString(),
+        },
+        diagnostics: {
+          aiUsed: true,
+          provider: "anthropic",
+          model,
+          webSearchUsed: webSearchRequests > 0 && webResults.length > 0,
+          webSearchRequests,
+        },
       },
     };
-  } catch {
-    return null;
+  } catch (error) {
+    const name = error instanceof Error ? error.name : "unknown";
+    return { result: null, error: `exception_${name}` };
   }
 }
 
