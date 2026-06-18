@@ -142,7 +142,51 @@ async function callProposalClaude(
               timezone: "Asia/Seoul",
             },
           }],
-        } : {}),
+        } : {
+          output_config: {
+            format: {
+              type: "json_schema",
+              schema: {
+                type: "object",
+                properties: {
+                  userSummary: { type: "string" },
+                  actions: {
+                    type: "array",
+                    minItems: 3,
+                    maxItems: 3,
+                    items: {
+                      type: "object",
+                      properties: {
+                        dateLabel: { type: "string" },
+                        title: { type: "string" },
+                        detail: { type: "string" },
+                      },
+                      required: ["dateLabel", "title", "detail"],
+                      additionalProperties: false,
+                    },
+                  },
+                  youtubeLinks: {
+                    type: "array",
+                    maxItems: 0,
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        url: { type: "string" },
+                        why: { type: "string" },
+                        channel: { type: "string" },
+                      },
+                      required: ["title", "url", "why", "channel"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["userSummary", "actions", "youtubeLinks"],
+                additionalProperties: false,
+              },
+            },
+          },
+        }),
       }),
       signal: AbortSignal.timeout(withWebSearch ? 10000 : 20000),
     });
@@ -155,17 +199,19 @@ async function callProposalClaude(
 
     const data = await response.json();
     const text = collectText(data?.content);
-    const parsed = extractJson(text) as RawProposal | null;
-    if (!parsed) return { result: null, error: "json_parse_failed" };
-
     const webResults = collectWebResults(data?.content);
-    const actions = parseActions(parsed.actions);
+    const parsed = extractJson(text) as RawProposal | null;
+    if (!parsed && !(withWebSearch && webResults.length)) {
+      return { result: null, error: "json_parse_failed" };
+    }
+    const proposal = parsed ?? {};
+    const actions = parseActions(proposal.actions);
     const youtubeLinks = withWebSearch
-      ? parseYoutubeLinks(parsed.youtubeLinks, webResults)
+      ? parseYoutubeLinks(proposal.youtubeLinks, webResults)
       : [];
     const userSummary =
-      typeof parsed.userSummary === "string" && parsed.userSummary.trim()
-        ? parsed.userSummary.trim()
+      typeof proposal.userSummary === "string" && proposal.userSummary.trim()
+        ? proposal.userSummary.trim()
         : deterministic.userSummary;
     const webSearchRequests = Number(data?.usage?.server_tool_use?.web_search_requests ?? 0);
 
