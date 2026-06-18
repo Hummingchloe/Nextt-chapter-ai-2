@@ -40,7 +40,10 @@ export default function DashboardPage() {
 
     async function loadProposal() {
       const cached = await loadCachedProposal();
-      if (cached?.ontologyUpdatedAt === currentOntology.updatedAt) {
+      if (
+        cached?.ontologyUpdatedAt === currentOntology.updatedAt &&
+        cached.diagnostics.aiUsed
+      ) {
         if (!cancelled) {
           setAiDashboard(cached.dashboard);
           setDiagnostics(cached.diagnostics);
