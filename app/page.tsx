@@ -36,18 +36,18 @@ const userTypes = [
 const steps = [
   {
     n: "01",
-    t: "편하게 답해요",
-    d: "시험이 아니에요. 14개의 짧은 질문에, 떠오르는 대로 답하면 돼요.",
+    t: "채팅에 기록해요",
+    d: "질문지를 넘기지 않아도 괜찮아요. 지금 생각과 오늘의 기록을 그냥 적으면 돼요.",
   },
   {
     n: "02",
-    t: "AI가 비춰줘요",
-    d: "흩어진 경험 속에서 당신의 강점과 가능한 방향을 정리해드려요.",
+    t: "Compass가 갱신돼요",
+    d: "입력은 로컬 온톨로지로 쌓이고, 서버는 필요한 계산만 수행해요.",
   },
   {
     n: "03",
-    t: "한 방향이 보여요",
-    d: "가장 현실적인 1순위 방향과, 이번 주에 할 수 있는 첫 행동까지.",
+    t: "대시보드에서 확인해요",
+    d: "정렬도 50% 이상부터 오늘의 액션과 추천 콘텐츠가 열려요.",
   },
 ];
 
@@ -60,10 +60,10 @@ export default function LandingPage() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <Wordmark />
         <Link
-          href="/start"
+          href="/chat"
           className="hidden rounded-full border border-line bg-surface/70 px-5 py-2 text-sm font-medium text-ink-soft transition hover:border-clay hover:text-clay sm:inline-block"
         >
-          진단 시작하기
+          채팅 시작하기
         </Link>
       </header>
 
@@ -75,7 +75,7 @@ export default function LandingPage() {
           </div>
           <p className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 px-4 py-1.5 text-sm text-ink-soft shadow-sm backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-sage" />
-            다시 시작하려는 사람을 위한 AI 진단
+            다시 시작하려는 사람을 위한 Compass Chat
           </p>
 
           <h1 className="animate-fade-up delay-1 font-display text-[2.1rem] font-bold leading-[1.32] text-ink sm:text-[3.1rem] sm:leading-[1.3]">
@@ -112,14 +112,14 @@ export default function LandingPage() {
 
           <div className="animate-fade-up delay-3 mt-9 flex flex-col items-center gap-3">
             <Link
-              href="/start"
+              href="/chat"
               className="group inline-flex items-center gap-2 rounded-full bg-clay px-8 py-4 text-[1.05rem] font-semibold text-white shadow-soft transition hover:bg-clay-deep hover:shadow-lift active:scale-[0.98]"
             >
-              무료로 진단 시작하기
+              채팅으로 시작하기
               <span className="transition group-hover:translate-x-0.5">→</span>
             </Link>
             <p className="text-sm text-ink-faint">
-              약 15분 · 가입 없이 · 완전 무료
+              가입 없이 · 로컬 우선 저장 · 대시보드 자동 갱신
             </p>
           </div>
         </div>
@@ -262,7 +262,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── After the report: momentum ──────────────────── */}
+      {/* ── After the dashboard: momentum ──────────────────── */}
       <section className="bg-cream-2 py-24">
         <div className="mx-auto max-w-4xl px-6">
           <div className="grid items-center gap-10 md:grid-cols-2">
@@ -273,11 +273,11 @@ export default function LandingPage() {
               <h2 className="mt-3 font-display text-2xl font-bold leading-snug text-ink sm:text-3xl">
                 혼자 두지 않아요.
                 <br />
-                하루 15분이면 충분해요.
+                채팅 한 줄이면 충분해요.
               </h2>
               <p className="mt-5 leading-relaxed text-ink-soft">
-                진단이 끝이 아니에요. 오늘의 작은 행동 하나를 정하고, 짧게
-                기록하면 AI가 당신의 흐름을 읽고 다음 걸음을 함께 찾아줘요.
+                채팅에 오늘의 작은 행동을 짧게 기록하면 Compass가 흐름을 읽고
+                대시보드에 다음 걸음을 보여줘요.
                 크게 하지 않아도 괜찮아요.{" "}
                 <b className="text-ink">멈추지만 않으면 돼요.</b>
               </p>
@@ -297,7 +297,7 @@ export default function LandingPage() {
             </div>
             <div className="rounded-3xl border border-line bg-surface p-6 shadow-soft">
               <p className="text-xs font-semibold uppercase tracking-wider text-clay">
-                My Next Chapter Note
+                Compass Chat
               </p>
               <div className="mt-3 rounded-2xl bg-cream-2 p-4">
                 <p className="text-sm text-ink-soft">오늘의 작은 행동</p>
@@ -330,13 +330,13 @@ export default function LandingPage() {
             한번 작게 시작해볼 수 있겠어.”
           </h2>
           <p className="mt-4 text-ink-soft">
-            진단을 마친 분들이 하는 말이에요. 당신의 차례예요.
+            채팅으로 기록할수록 대시보드가 선명해집니다. 당신의 차례예요.
           </p>
           <Link
-            href="/start"
+            href="/chat"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-clay px-8 py-4 text-[1.05rem] font-semibold text-white shadow-soft transition hover:bg-clay-deep hover:shadow-lift active:scale-[0.98]"
           >
-            무료로 진단 시작하기 →
+            채팅으로 시작하기 →
           </Link>
         </div>
       </section>
