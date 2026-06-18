@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { generateCompassAIReply } from "@/lib/compass-ai";
 import { normalizeOntology, updateOntologyFromInput } from "@/lib/ontology";
 import { buildProposalDashboard } from "@/lib/proposal";
 
@@ -23,13 +24,26 @@ export async function POST(req: Request) {
 
   const current = normalizeOntology(readObject(body, "ontology"));
   const result = updateOntologyFromInput(current, input);
-  const dashboard = buildProposalDashboard(result.ontology);
+  const aiReply = await generateCompassAIReply(result.ontology);
+  const assistantMessage = aiReply
+    ? { ...result.assistantMessage, text: aiReply.text }
+    : result.assistantMessage;
+  const ontology = {
+    ...result.ontology,
+    messages: result.ontology.messages.map((message) =>
+      message.id === result.assistantMessage.id ? assistantMessage : message,
+    ),
+  };
+  const dashboard = buildProposalDashboard(ontology);
 
   return NextResponse.json({
-    ontology: result.ontology,
-    assistantMessage: result.assistantMessage,
+    ontology,
+    assistantMessage,
     dashboard,
     persistence: "local-first-no-server-write",
+    ai: aiReply
+      ? { used: true, provider: aiReply.provider, model: aiReply.model }
+      : { used: false, provider: "deterministic-fallback" },
   });
 }
 
