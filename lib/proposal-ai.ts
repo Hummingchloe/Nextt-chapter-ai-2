@@ -117,7 +117,7 @@ async function callProposalClaude(
       },
       body: JSON.stringify({
         model,
-        max_tokens: withWebSearch ? 1100 : 800,
+        max_tokens: withWebSearch ? 800 : 600,
         temperature: 0.25,
         system,
         messages: [{
@@ -144,7 +144,7 @@ async function callProposalClaude(
           }],
         } : {}),
       }),
-      signal: AbortSignal.timeout(withWebSearch ? 12000 : 14000),
+      signal: AbortSignal.timeout(withWebSearch ? 10000 : 20000),
     });
     if (!response.ok) {
       const errorBody = await response.json().catch(() => null);
@@ -196,12 +196,12 @@ async function callProposalClaude(
 
 function buildContext(ontology: UserOntology): string {
   const signals = ontology.signals
-    .slice(0, 12)
+    .slice(0, 8)
     .map((signal) => `- ${signal.kind}: ${signal.label} / 근거: ${signal.evidence}`)
     .join("\n");
   const records = ontology.messages
     .filter((message) => message.role === "user")
-    .slice(-8)
+    .slice(-5)
     .map((message) => `- ${message.text}`)
     .join("\n");
   return [
