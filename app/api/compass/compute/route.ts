@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   let next = addBeads(state, beads, now);
   const completedAction = findCompletedActionFromText(input, activeActions(state, now));
   if (completedAction) {
-    next = completeAction(next, completedAction, now, `${seed}-typed`);
+    next = completeAction(next, completedAction, now, `${seed}-typed`, input);
   }
   const actions = activeActions(next, now);
 

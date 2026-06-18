@@ -168,13 +168,21 @@ export function completeAction(
   action: CompassAction,
   now: string,
   idSeed: string,
+  note?: string,
 ): CompassState {
   const moved = addBeads(state, [actionToBead(action, now, idSeed)], now);
+  const cleanNote = note?.trim();
   return {
     ...moved,
     doneActions: [
       ...moved.doneActions,
-      { id: action.id, title: action.title, kind: action.kind, completedAt: now },
+      {
+        id: action.id,
+        title: action.title,
+        kind: action.kind,
+        completedAt: now,
+        ...(cleanNote ? { note: cleanNote.slice(0, 240) } : {}),
+      },
     ],
   };
 }

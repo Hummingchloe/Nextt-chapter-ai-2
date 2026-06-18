@@ -20,6 +20,7 @@ const STATUS_LABEL: Record<CompassState["status"], string> = {
 export default function DashboardPage() {
   const [compass, setCompass] = useState<CompassState | null>(null);
   const [justMoved, setJustMoved] = useState<string>("");
+  const [actionNotes, setActionNotes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadCompassState(new Date().toISOString()).then(setCompass).catch(() => setCompass(null));
@@ -63,9 +64,10 @@ export default function DashboardPage() {
     if (!compass) return;
     const now = new Date().toISOString();
     const before = compass.displayAlignment;
-    const next = completeAction(compass, action, now, Date.now().toString(36));
+    const next = completeAction(compass, action, now, Date.now().toString(36), actionNotes[action.id]);
     setCompass(next);
     void saveCompassState(next);
+    setActionNotes((prev) => ({ ...prev, [action.id]: "" }));
     const delta = Math.round((next.displayAlignment - before) * 100);
     setJustMoved(`‘${action.title}’ 완료 · 정렬도 ${delta >= 0 ? "+" : ""}${delta}%`);
   }
@@ -120,7 +122,7 @@ export default function DashboardPage() {
               </div>
               <h1 className="mt-2 font-display text-3xl font-bold text-ink">살아있는 나침반</h1>
               <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                채팅 기록이 벡터 구슬로 쌓이고, 코사인 정렬도가 실시간으로 방향을 가리킵니다.
+                매일 남긴 기록이 한 방향으로 모이는지 보여줍니다.
               </p>
               <div className="mt-6">
                 <div className="flex items-end gap-2">
@@ -159,7 +161,7 @@ export default function DashboardPage() {
           </aside>
 
           <div className="space-y-5">
-            <Section title="날짜별 액션 아이템 (완료하면 나침반이 움직입니다)">
+            <Section title="오늘의 액션 아이템">
               {actions.length ? (
                 <div className="grid gap-3 md:grid-cols-2">
                   {actions.map((a) => (
@@ -176,6 +178,30 @@ export default function DashboardPage() {
                       </div>
                       <p className="mt-2 font-semibold leading-snug text-ink">{a.title}</p>
                       <p className="mt-2 flex-1 text-xs leading-relaxed text-ink-soft">{a.detail}</p>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {["보냈어요", "만났어요", "작성했어요"].map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() =>
+                              setActionNotes((prev) => ({
+                                ...prev,
+                                [a.id]: prev[a.id] ? `${prev[a.id]} · ${tag}` : tag,
+                              }))
+                            }
+                            className="rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft transition hover:border-clay hover:text-clay"
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                      <textarea
+                        value={actionNotes[a.id] ?? ""}
+                        onChange={(e) => setActionNotes((prev) => ({ ...prev, [a.id]: e.target.value }))}
+                        placeholder="실행 결과를 짧게 남겨주세요"
+                        maxLength={240}
+                        className="mt-2 min-h-16 resize-none rounded-xl border border-line bg-surface px-3 py-2 text-xs leading-relaxed text-ink outline-none placeholder:text-ink-faint focus:border-clay"
+                      />
                       <button
                         onClick={() => complete(a)}
                         className="mt-3 rounded-full bg-clay px-3 py-2 text-xs font-semibold text-white transition hover:bg-clay-deep"
@@ -199,6 +225,7 @@ export default function DashboardPage() {
                         <li key={`${d.id}-${d.completedAt}`} className="flex items-center gap-2 text-sm text-ink-soft">
                           <span className="text-sage">✓</span>
                           <span className="line-through decoration-ink-faint/50">{d.title}</span>
+                          {d.note && <span className="text-xs text-ink-faint">· {d.note}</span>}
                         </li>
                       ))}
                   </ul>
@@ -206,9 +233,9 @@ export default function DashboardPage() {
               )}
             </Section>
 
-            <Section title="추천 유튜브 콘텐츠">
+            <Section title="시장/고객 신호">
               {contentSearching && content.length > 0 && (
-                <p className="mb-2 text-xs font-medium text-sage">실제 영상을 검색하는 중… (도착하면 교체됩니다)</p>
+                <p className="mb-2 text-xs font-medium text-sage">실제 시장 참고 영상을 검색하는 중… (도착하면 교체됩니다)</p>
               )}
               {content.length ? (
                 <div className="grid gap-3 md:grid-cols-3">
@@ -218,10 +245,19 @@ export default function DashboardPage() {
                       href={link.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-2xl border border-line bg-surface p-4 transition hover:border-clay hover:shadow-soft"
+                      className="overflow-hidden rounded-2xl border border-line bg-surface transition hover:border-clay hover:shadow-soft"
                     >
-                      <p className="font-semibold leading-snug text-ink">{link.title}</p>
-                      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{link.why}</p>
+                      {link.imageUrl ? (
+                        <img src={link.imageUrl} alt="" className="aspect-video w-full bg-cream object-cover" loading="lazy" />
+                      ) : (
+                        <div className="flex aspect-video items-center justify-center bg-cream-2 px-4 text-center text-xs font-semibold text-clay">
+                          시장 참고 자료
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <p className="font-semibold leading-snug text-ink">{link.title}</p>
+                        <p className="mt-2 text-xs leading-relaxed text-ink-soft">{link.why}</p>
+                      </div>
                     </a>
                   ))}
                 </div>

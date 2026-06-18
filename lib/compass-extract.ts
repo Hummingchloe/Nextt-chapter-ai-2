@@ -291,6 +291,15 @@ export async function synthesizeEssence(
 // deterministic deriveContent() fallback.
 const YT_DIRECT = /(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)/i;
 
+function youtubeThumbnail(url: string): string | undefined {
+  const match =
+    url.match(/[?&]v=([^&]+)/) ??
+    url.match(/youtu\.be\/([^?&/]+)/) ??
+    url.match(/youtube\.com\/shorts\/([^?&/]+)/);
+  const id = match?.[1];
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : undefined;
+}
+
 export async function searchYoutubeContent(theme: string): Promise<ContentLink[] | null> {
   const apiKey = anthropicApiKey();
   if (!apiKey) return null;
@@ -343,6 +352,7 @@ export async function searchYoutubeContent(theme: string): Promise<ContentLink[]
       title: r.title.length > 80 ? `${r.title.slice(0, 80)}…` : r.title,
       url: r.url,
       why: "실제 웹검색으로 찾은 영상이에요.",
+      imageUrl: youtubeThumbnail(r.url),
     }));
     return links.length ? links : null;
   } catch {

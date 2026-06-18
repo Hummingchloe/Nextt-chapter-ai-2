@@ -64,6 +64,7 @@ export interface CompletedAction {
   title: string;
   kind: "probe" | "reinforce";
   completedAt: string;
+  note?: string;
 }
 
 export interface CompassState {

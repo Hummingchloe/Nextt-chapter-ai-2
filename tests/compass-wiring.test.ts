@@ -83,8 +83,9 @@ test("typed completion can resolve an active action and remove it from the next 
 
   const matched = findCompletedActionFromText("액션 아이템 1개 해결했어요", before);
   assert.equal(matched?.id, before[0].id);
-  state = completeAction(state, matched!, NOW, "typed1");
+  state = completeAction(state, matched!, NOW, "typed1", "보냈어요 · 반응 기다리는 중");
 
   assert.ok(state.doneActions.some((done) => done.id === before[0].id));
+  assert.equal(state.doneActions.at(-1)?.note, "보냈어요 · 반응 기다리는 중");
   assert.ok(!activeActions(state, NOW).some((action) => action.id === before[0].id));
 });

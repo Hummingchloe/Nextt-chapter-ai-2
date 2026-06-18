@@ -207,7 +207,7 @@ export default function ChatPage() {
                 <LogoMark className="h-9 w-9" />
                 <div>
                   <h1 className="font-display text-xl font-bold text-ink">Compass Chat</h1>
-                  <p className="text-sm text-ink-soft">기록하면 벡터 나침반이 갱신됩니다.</p>
+                  <p className="text-sm text-ink-soft">오늘의 기록을 남기면 나침반이 갱신됩니다.</p>
                 </div>
               </div>
               <button
@@ -227,7 +227,7 @@ export default function ChatPage() {
                 <p className="font-semibold">처음이라면 여기서 시작하면 됩니다.</p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                   요즘 떠오르는 고민, 오늘 한 작은 행동, 누가 물어본 문제를 그냥 적어주세요.
-                  글은 벡터 신호(구슬)로 바뀌어 이 브라우저에만 쌓입니다.
+                  글은 방향 신호로 바뀌어 이 브라우저에만 쌓입니다.
                 </p>
               </div>
             ) : (
@@ -286,7 +286,7 @@ export default function ChatPage() {
           <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
             <p className="text-sm font-semibold text-ink">로컬 우선 저장</p>
             <p className="mt-2 text-xs leading-relaxed text-ink-soft">
-              구슬·축·나침반은 이 브라우저(IndexedDB)에 저장됩니다. 서버는 입력을 받아 벡터를 추출하고 결과만 돌려줘요.
+              기록과 나침반은 이 브라우저(IndexedDB)에 저장됩니다. 서버는 계산 결과만 돌려줘요.
             </p>
           </div>
           <Link
@@ -327,7 +327,7 @@ function CompassCard({ compass }: { compass: CompassState | null }) {
   return (
     <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-clay">나의 나침반 — H</p>
+        <p className="text-sm font-semibold text-clay">나의 나침반</p>
         {compass && (
           <span className="rounded-full bg-cream-2 px-2.5 py-1 text-xs font-medium text-ink-soft">
             {STATUS_LABEL[compass.status]}
@@ -337,7 +337,7 @@ function CompassCard({ compass }: { compass: CompassState | null }) {
       <p className="mt-3 font-display text-lg font-bold leading-snug text-ink">
         {compass?.compass.essence ?? compass?.compass.oneLiner ?? "아직 방향을 듣는 중이에요."}
       </p>
-      <p className="mt-1 text-xs text-ink-faint">숫자로 못 박는 방향(H)을 한 문장으로 압축</p>
+      <p className="mt-1 text-xs text-ink-faint">흩어진 기록에서 보이는 현재 방향</p>
 
       <div className="mt-3">
         <BeadCompass state={compass} />
@@ -350,7 +350,7 @@ function CompassCard({ compass }: { compass: CompassState | null }) {
         <span className="text-sm font-semibold text-clay">{pct}%</span>
       </div>
       <p className="mt-1.5 text-xs text-ink-faint">
-        자화도 M(정렬도) — {compass ? CONVERGE[compass.status] : "계산 전"}
+        정렬도 — {compass ? CONVERGE[compass.status] : "계산 전"}
       </p>
     </div>
   );

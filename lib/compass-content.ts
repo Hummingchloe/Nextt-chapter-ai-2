@@ -12,6 +12,7 @@ export interface ContentLink {
   title: string;
   url: string;
   why: string;
+  imageUrl?: string;
 }
 
 function youtube(query: string): string {
