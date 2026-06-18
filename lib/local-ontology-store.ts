@@ -4,11 +4,19 @@
 // The server never imports this file.
 
 import { createEmptyOntology, normalizeOntology, type UserOntology } from "./ontology";
+import type { ProposalDashboard, ProposalGenerationDiagnostics } from "./proposal";
 
 const DB_NAME = "my-next-chapter-local";
 const DB_VERSION = 1;
 const STORE = "ontology";
 const ACTIVE_KEY = "active";
+const PROPOSAL_KEY = "proposal";
+
+export interface CachedProposal {
+  ontologyUpdatedAt: string;
+  dashboard: ProposalDashboard;
+  diagnostics: ProposalGenerationDiagnostics;
+}
 
 export async function loadLocalOntology(): Promise<UserOntology> {
   const db = await openDb();
@@ -27,8 +35,26 @@ export async function saveLocalOntology(ontology: UserOntology): Promise<void> {
 
 export async function resetLocalOntology(): Promise<UserOntology> {
   const ontology = createEmptyOntology();
-  await saveLocalOntology(ontology);
+  const db = await openDb();
+  const store = db.transaction(STORE, "readwrite").objectStore(STORE);
+  await request(store.put(ontology, ACTIVE_KEY));
+  await request(store.delete(PROPOSAL_KEY));
   return ontology;
+}
+
+export async function loadCachedProposal(): Promise<CachedProposal | null> {
+  const db = await openDb();
+  const stored = await request<CachedProposal | undefined>(
+    db.transaction(STORE, "readonly").objectStore(STORE).get(PROPOSAL_KEY),
+  );
+  return stored?.dashboard ? stored : null;
+}
+
+export async function saveCachedProposal(proposal: CachedProposal): Promise<void> {
+  const db = await openDb();
+  await request(
+    db.transaction(STORE, "readwrite").objectStore(STORE).put(proposal, PROPOSAL_KEY),
+  );
 }
 
 function openDb(): Promise<IDBDatabase> {

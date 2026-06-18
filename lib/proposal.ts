@@ -17,6 +17,7 @@ export interface ProposalLink {
   title: string;
   url: string;
   why: string;
+  channel?: string;
 }
 
 export interface ProposalDashboard {
@@ -26,6 +27,17 @@ export interface ProposalDashboard {
   youtubeLinks: ProposalLink[];
   userSummary: string;
   recordLog: { id: string; dateLabel: string; text: string }[];
+  source?: "deterministic" | "claude";
+  generatedAt?: string;
+}
+
+export interface ProposalGenerationDiagnostics {
+  aiUsed: boolean;
+  provider: "anthropic" | "deterministic";
+  model?: string;
+  webSearchUsed: boolean;
+  webSearchRequests: number;
+  fallbackReason?: string;
 }
 
 export function buildProposalDashboard(ontology: UserOntology): ProposalDashboard {
@@ -47,6 +59,8 @@ export function buildProposalDashboard(ontology: UserOntology): ProposalDashboar
         dateLabel: shortDate(m.createdAt),
         text: m.text.length > 92 ? `${m.text.slice(0, 92)}...` : m.text,
       })),
+    source: "deterministic",
+    generatedAt: new Date().toISOString(),
   };
 }
 

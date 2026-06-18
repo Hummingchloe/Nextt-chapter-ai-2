@@ -3,22 +3,85 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Wordmark } from "../components/Logo";
-import { loadLocalOntology } from "@/lib/local-ontology-store";
-import { buildProposalDashboard } from "@/lib/proposal";
+import {
+  loadCachedProposal,
+  loadLocalOntology,
+  saveCachedProposal,
+} from "@/lib/local-ontology-store";
+import {
+  buildProposalDashboard,
+  type ProposalDashboard,
+  type ProposalGenerationDiagnostics,
+} from "@/lib/proposal";
 import { signalsByKind, type UserOntology } from "@/lib/ontology";
 
 export default function DashboardPage() {
   const [ontology, setOntology] = useState<UserOntology | null>(null);
+  const [aiDashboard, setAiDashboard] = useState<ProposalDashboard | null>(null);
+  const [diagnostics, setDiagnostics] = useState<ProposalGenerationDiagnostics | null>(null);
+  const [proposalLoading, setProposalLoading] = useState(false);
+  const [proposalError, setProposalError] = useState("");
 
   useEffect(() => {
     loadLocalOntology().then(setOntology).catch(() => setOntology(null));
   }, []);
 
-  const dashboard = useMemo(
+  const deterministicDashboard = useMemo(
     () => (ontology ? buildProposalDashboard(ontology) : null),
     [ontology],
   );
+  const dashboard = aiDashboard ?? deterministicDashboard;
   const compass = ontology?.compass;
+
+  useEffect(() => {
+    if (!ontology || ontology.compass.alignment < 50) return;
+    const currentOntology = ontology;
+    let cancelled = false;
+
+    async function loadProposal() {
+      const cached = await loadCachedProposal();
+      if (cached?.ontologyUpdatedAt === currentOntology.updatedAt) {
+        if (!cancelled) {
+          setAiDashboard(cached.dashboard);
+          setDiagnostics(cached.diagnostics);
+        }
+        return;
+      }
+
+      if (!cancelled) {
+        setProposalLoading(true);
+        setProposalError("");
+      }
+      try {
+        const response = await fetch("/api/proposal/generate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ontology: currentOntology }),
+        });
+        if (!response.ok) throw new Error("proposal request failed");
+        const data = await response.json();
+        const cachedProposal = {
+          ontologyUpdatedAt: currentOntology.updatedAt,
+          dashboard: data.dashboard as ProposalDashboard,
+          diagnostics: data.diagnostics as ProposalGenerationDiagnostics,
+        };
+        await saveCachedProposal(cachedProposal);
+        if (!cancelled) {
+          setAiDashboard(cachedProposal.dashboard);
+          setDiagnostics(cachedProposal.diagnostics);
+        }
+      } catch {
+        if (!cancelled) setProposalError("Claude 제안을 불러오지 못해 기본 제안을 보여주고 있어요.");
+      } finally {
+        if (!cancelled) setProposalLoading(false);
+      }
+    }
+
+    void loadProposal();
+    return () => {
+      cancelled = true;
+    };
+  }, [ontology]);
 
   return (
     <main className="min-h-dvh bg-cream">
@@ -70,6 +133,11 @@ export default function DashboardPage() {
 
           <div className="space-y-5">
             <Section title="짧은 유저 써머리">
+              <ProposalStatus
+                loading={proposalLoading}
+                diagnostics={diagnostics}
+                error={proposalError}
+              />
               <p className="text-sm leading-relaxed text-ink-soft">
                 {dashboard?.userSummary ?? "아직 요약할 기록이 없습니다."}
               </p>
@@ -103,6 +171,9 @@ export default function DashboardPage() {
                       className="rounded-2xl border border-line bg-surface p-4 transition hover:border-clay hover:shadow-soft"
                     >
                       <p className="font-semibold leading-snug text-ink">{link.title}</p>
+                      {link.channel && (
+                        <p className="mt-1 text-xs font-medium text-clay">{link.channel}</p>
+                      )}
                       <p className="mt-2 text-xs leading-relaxed text-ink-soft">{link.why}</p>
                     </a>
                   ))}
@@ -142,6 +213,38 @@ export default function DashboardPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function ProposalStatus({
+  loading,
+  diagnostics,
+  error,
+}: {
+  loading: boolean;
+  diagnostics: ProposalGenerationDiagnostics | null;
+  error: string;
+}) {
+  if (loading) {
+    return (
+      <p className="mb-3 rounded-xl bg-sage-tint px-3 py-2 text-xs font-medium text-sage">
+        Claude가 액션을 만들고 실제 콘텐츠를 검색하고 있어요.
+      </p>
+    );
+  }
+  if (error) {
+    return <p className="mb-3 text-xs text-clay-deep">{error}</p>;
+  }
+  if (!diagnostics) return null;
+  const text = diagnostics.aiUsed
+    ? diagnostics.webSearchUsed
+      ? `Claude + 웹서치 · 실제 검색 ${diagnostics.webSearchRequests}회`
+      : "Claude 제안 · 웹서치 미사용"
+    : "기본 제안";
+  return (
+    <p className="mb-3 inline-flex rounded-full bg-cream-2 px-3 py-1.5 text-xs font-medium text-ink-soft">
+      {text}
+    </p>
   );
 }
 
