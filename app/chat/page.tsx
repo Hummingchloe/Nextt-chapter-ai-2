@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogoMark, Wordmark } from "../components/Logo";
 import BeadCompass from "../components/BeadCompass";
 import {
@@ -12,12 +12,10 @@ import {
 import type { CompassState } from "@/lib/compass-engine";
 import { seedCompass } from "@/lib/compass-seed";
 import { BRAND } from "@/lib/brand";
+import { CHAT_STARTERS, resolveChatWelcome } from "@/lib/chat-welcome";
 
-const STARTERS = [
-  "오늘 한 일은...",
-  "누가 내게 물어본 문제는...",
-  "내일 작게 해볼 일은...",
-];
+const LAST_VISIT_KEY = "lompass-chat-last-visit";
+const ONBOARDING_WELCOME_PREFIX = "lompass-chat-onboarding-welcome:";
 
 interface Bubble {
   id: string;
@@ -53,12 +51,76 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
+    const now = new Date();
     loadCompassState(new Date().toISOString())
-      .then(setCompass)
-      .catch(() => resetCompassState(new Date().toISOString()).then(setCompass));
+      .then((next) => {
+        setCompass(next);
+        showVisitWelcome(next, now);
+      })
+      .catch(() =>
+        resetCompassState(new Date().toISOString()).then((next) => {
+          setCompass(next);
+          showVisitWelcome(next, now);
+        }),
+      );
   }, []);
+
+  function showVisitWelcome(next: CompassState, now: Date) {
+    const params = new URLSearchParams(window.location.search);
+    const entry = params.get("entry");
+    const sessionId = params.get("sid") || "unknown";
+    const onboardingKey = `${ONBOARDING_WELCOME_PREFIX}${sessionId}`;
+
+    let onboardingSeen = false;
+    let lastVisitAt: string | null = null;
+    try {
+      onboardingSeen = window.localStorage.getItem(onboardingKey) === "1";
+      lastVisitAt = window.localStorage.getItem(LAST_VISIT_KEY);
+    } catch {
+      // The greeting still works once; the URL is cleaned below to prevent repeats.
+    }
+
+    const welcome = resolveChatWelcome({
+      entry,
+      onboardingSeen,
+      lastVisitAt,
+      now,
+      status: next.status,
+    });
+
+    try {
+      window.localStorage.setItem(LAST_VISIT_KEY, now.toISOString());
+      if (welcome?.kind === "onboarding") {
+        window.localStorage.setItem(onboardingKey, "1");
+      }
+    } catch {
+      // Chat remains usable when browser storage is unavailable.
+    }
+
+    if (entry === "onboarding") {
+      window.history.replaceState(window.history.state, "", window.location.pathname);
+    }
+
+    if (welcome) {
+      setMessages((current) =>
+        current.length
+          ? current
+          : [
+              {
+                id: `${welcome.kind}-${now.toISOString()}`,
+                role: "assistant",
+                text: welcome.text,
+              },
+            ],
+      );
+    }
+  }
 
   async function send() {
     const text = input.trim();
@@ -251,7 +313,7 @@ export default function ChatPage() {
 
           <div className="border-t border-line bg-surface p-4">
             <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
-              {STARTERS.map((s) => (
+              {CHAT_STARTERS.map((s) => (
                 <button
                   key={s}
                   onClick={() => setInput(s)}
