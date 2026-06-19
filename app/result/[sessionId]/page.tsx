@@ -13,20 +13,48 @@ import ResultActions from "./ResultActions";
 
 export const dynamic = "force-dynamic";
 
-const MARKET_STAGE = {
-  ready_to_test: {
-    label: "시험해볼 단계",
-    description: "작은 제안을 실제 사람에게 보여주며 반응을 확인해볼 수 있어요.",
-  },
-  needs_narrowing: {
-    label: "좁혀가는 중",
-    description: "누구의 어떤 문제를 풀지 한 번 더 좁히면 검증이 쉬워져요.",
-  },
-  needs_evidence: {
-    label: "신호를 모으는 중",
-    description: "가격보다 먼저, 이 문제를 가진 사람의 말을 더 들어볼 때예요.",
-  },
-} as const;
+function marketEvidenceStage(
+  score: number,
+  status?: "supported" | "insufficient" | "unavailable",
+) {
+  if (status !== "supported") {
+    return {
+      label: "확인 보류",
+      description: "공개 근거가 충분하지 않아 시장 판단을 보류했어요.",
+    };
+  }
+  if (score >= 70) {
+    return {
+      label: "근거 충분",
+      description: "여러 공개 근거가 확인됐어요. 이제 실제 고객 반응으로 검증할 차례예요.",
+    };
+  }
+  if (score >= 50) {
+    return {
+      label: "형성 중",
+      description: "시장 단서는 보이지만 고객과 오퍼를 조금 더 좁혀야 해요.",
+    };
+  }
+  return {
+    label: "씨앗",
+    description: "아직 시장을 단정하기보다 반복되는 고객 문제부터 확인할 때예요.",
+  };
+}
+
+function nextStepCopy(status?: "supported" | "insufficient" | "unavailable") {
+  if (status === "supported") {
+    return {
+      title: "확인된 시장 단서를 고객 반응으로",
+      description:
+        "공개 근거는 출발점이에요. 이제 실제 사람에게 질문하고 작은 제안을 보여주며 이 방향이 통하는지 확인해보세요.",
+    };
+  }
+  return {
+    title: "시장 판단보다 먼저, 고객 확인으로",
+    description:
+      "아직 시장을 단정하기에는 근거가 부족해요. 고객 문제와 지불 의사를 작은 대화로 확인하는 것이 다음 단계예요.",
+  };
+}
 
 export default async function ResultPage({
   params,
@@ -59,7 +87,27 @@ export default async function ResultPage({
   const otherDirections = r.directions.filter(
     (direction) => direction.label !== r.topRecommendation.label,
   );
-  const marketStage = r.marketCheck ? MARKET_STAGE[r.marketCheck.verdict] : null;
+  const marketDisplayScore = r.marketCheck
+    ? r.marketCheck.researchStatus === "supported"
+      ? r.marketCheck.score
+      : Math.min(r.marketCheck.score, 49)
+    : null;
+  const displayMarketScore = marketDisplayScore ?? 0;
+  const marketStage = r.marketCheck && marketDisplayScore !== null
+    ? marketEvidenceStage(displayMarketScore, r.marketCheck.researchStatus)
+    : null;
+  const marketSummary = r.marketCheck
+    ? {
+        paidMarket:
+          r.marketCheck.marketSummary?.paidMarket ?? "유료 대안 확인 보류",
+        seekingPeople:
+          r.marketCheck.marketSummary?.seekingPeople ?? "수요 근거 확인 보류",
+        firstTestDifficulty:
+          r.marketCheck.marketSummary?.firstTestDifficulty ??
+          "첫 검증 난이도 확인 보류",
+      }
+    : null;
+  const nextStep = nextStepCopy(r.marketCheck?.researchStatus);
 
   return (
     <main className="min-h-dvh overflow-x-hidden bg-cream pb-24">
@@ -149,89 +197,130 @@ export default async function ResultPage({
             )}
           </ReportSection>
 
-          {r.marketCheck && marketStage && (
-            <ReportSection index="03" title="이 방향, 시장에서 통할까?">
+          {r.marketCheck && marketStage && marketSummary && (
+            <ReportSection index="03" title="지금 시장은 얼마나 있나">
               <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold text-ink-soft">시장 확인 단계</p>
+                    <p className="text-xs font-semibold text-ink-soft">시장 근거 형성도</p>
                     <p className="mt-1 text-lg font-extrabold tracking-[-0.025em] text-ink">
                       {marketStage.label}
                     </p>
                   </div>
                   <span className="rounded-lg bg-sage-tint px-3 py-1.5 text-xs font-semibold text-sage">
-                    검증 점수 {r.marketCheck.score}
+                    시장 점수 {displayMarketScore}
                   </span>
                 </div>
 
                 <div
-                  className="mt-5 h-2 overflow-hidden rounded-full bg-sand"
+                  className="relative mt-6 h-2 rounded-full bg-sand"
                   role="progressbar"
-                  aria-label="시장 검증 점수"
+                  aria-label="시장 근거 형성도"
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-valuenow={r.marketCheck.score}
+                  aria-valuenow={displayMarketScore}
                 >
                   <div
                     className="h-full rounded-full bg-clay"
-                    style={{ width: `${Math.max(4, Math.min(100, r.marketCheck.score))}%` }}
+                    style={{ width: `${Math.max(4, Math.min(100, displayMarketScore))}%` }}
                   />
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-clay shadow-sm"
+                    style={{ left: `${Math.max(4, Math.min(96, displayMarketScore))}%` }}
+                  />
+                </div>
+                <div className="mt-2 flex justify-between text-[0.7rem] text-ink-faint">
+                  <span>씨앗</span>
+                  <span>형성 중</span>
+                  <span>근거 충분</span>
                 </div>
 
                 <p className="mt-4 text-sm leading-6 text-ink-soft">
                   {marketStage.description}
                 </p>
-                <p className="mt-3 text-[0.96rem] font-semibold leading-7 text-ink">
-                  {r.marketCheck.coaching}
-                </p>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <SignalList title="웹에서 확인된 시장 단서" items={r.marketCheck.demandSignals} />
-                  <SignalList title="더 확인할 것" items={r.marketCheck.riskSignals} />
+                <div className="mt-6 divide-y divide-line border-y border-line">
+                  <MarketSummaryRow label="유료 대안" value={marketSummary.paidMarket} />
+                  <MarketSummaryRow label="찾는 사람" value={marketSummary.seekingPeople} />
+                  <MarketSummaryRow
+                    label="첫 검증 난이도"
+                    value={marketSummary.firstTestDifficulty}
+                  />
                 </div>
 
-                {r.marketCheck.sources.some((source) => source.url) && (
-                  <div className="mt-5 rounded-2xl border border-line bg-surface p-5">
-                    <p className="text-xs font-semibold text-ink-soft">
-                      확인한 공개 출처
+                <details className="group mt-5 rounded-xl border border-line bg-cream/60">
+                  <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-ink">
+                    상세 시장 근거 보기
+                    <span
+                      aria-hidden="true"
+                      className="text-lg font-normal text-ink-faint transition group-open:rotate-45"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <div className="space-y-4 border-t border-line px-4 py-4">
+                    <p className="text-sm font-semibold leading-6 text-ink">
+                      {r.marketCheck.coaching}
                     </p>
-                    <ul className="mt-3 space-y-2">
-                      {r.marketCheck.sources
-                        .filter((source) => source.url)
-                        .map((source) => (
-                          <li key={source.url}>
-                            <a
-                              href={source.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-sm font-semibold leading-6 text-clay-deep underline decoration-clay/30 underline-offset-4"
-                            >
-                              {source.label}
-                            </a>
-                          </li>
-                        ))}
-                    </ul>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <SignalList
+                        title="웹에서 확인된 시장 단서"
+                        items={r.marketCheck.demandSignals}
+                      />
+                      <SignalList title="더 확인할 것" items={r.marketCheck.riskSignals} />
+                    </div>
+                    {r.marketCheck.sources.some((source) => source.url) && (
+                      <div>
+                        <p className="text-xs font-semibold text-ink-soft">
+                          확인한 공개 출처
+                        </p>
+                        <ul className="mt-3 space-y-2">
+                          {r.marketCheck.sources
+                            .filter((source) => source.url)
+                            .map((source) => (
+                              <li key={source.url}>
+                                <a
+                                  href={source.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-sm font-semibold leading-6 text-clay-deep underline decoration-clay/30 underline-offset-4"
+                                >
+                                  {source.label}
+                                </a>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="rounded-xl bg-cream-2 p-4">
+                      <p className="text-xs font-semibold text-clay-deep">
+                        먼저 물어볼 질문
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-ink">
+                        {r.marketCheck.validationQuestion}
+                      </p>
+                    </div>
                   </div>
-                )}
-
-                <div className="mt-5 rounded-2xl bg-cream-2 p-5">
-                  <p className="text-xs font-semibold text-clay-deep">먼저 물어볼 질문</p>
-                  <p className="mt-2 text-sm leading-6 text-ink">
-                    {r.marketCheck.validationQuestion}
-                  </p>
-                </div>
+                </details>
               </div>
             </ReportSection>
           )}
 
-          <ReportSection index="04" title="이번 주, 가장 작은 첫 행동">
+          <ReportSection index="04" title="다음 단계 제안">
             <div className="rounded-2xl border border-sage/30 bg-sage-tint p-5 sm:p-6">
               <p className="text-xs font-semibold text-sage">방향을 검증으로</p>
-              <p className="mt-2 text-[1rem] font-semibold leading-7 text-ink">
+              <h3 className="mt-2 text-[1.05rem] font-extrabold leading-7 text-ink">
+                {nextStep.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-ink-soft">
+                {nextStep.description}
+              </p>
+              <p className="mt-5 border-t border-sage/20 pt-4 text-[1rem] font-semibold leading-7 text-ink">
                 {r.firstAction}
               </p>
               {r.marketCheck?.firstExperiment && (
-                <p className="mt-4 border-t border-sage/20 pt-4 text-sm leading-6 text-ink-soft">
+                <p className="mt-3 text-sm leading-6 text-ink-soft">
                   {r.marketCheck.firstExperiment}
                 </p>
               )}
@@ -382,6 +471,15 @@ function SignalList({ title, items }: { title: string; items: string[] }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function MarketSummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid gap-1 py-4 sm:grid-cols-[8rem_1fr] sm:items-start sm:gap-4">
+      <p className="text-sm text-ink-soft">{label}</p>
+      <p className="text-sm font-semibold leading-6 text-ink sm:text-right">{value}</p>
     </div>
   );
 }

@@ -21,6 +21,11 @@ export interface MarketCheck {
   verdict: MarketCheckVerdict;
   score: number; // 0..100, confidence to test the offer, not success probability
   researchStatus?: "supported" | "insufficient" | "unavailable";
+  marketSummary?: {
+    paidMarket: string;
+    seekingPeople: string;
+    firstTestDifficulty: string;
+  };
   demandSignals: string[];
   riskSignals: string[];
   coaching: string;
@@ -118,6 +123,17 @@ function verdictFor(score: number, riskCount: number): MarketCheckVerdict {
   return "needs_evidence";
 }
 
+function firstTestDifficulty(rec: RecommendationOutput): string {
+  const { customerAccess, startEase } = rec.topDirection.breakdown;
+  if (customerAccess >= 2 && startEase >= 2) {
+    return "낮음 · 가까운 고객에게 바로 질문";
+  }
+  if (customerAccess >= 2 || startEase >= 2) {
+    return "보통 · 범위를 좁혀 작은 대화부터";
+  }
+  return "높음 · 고객 접점부터 마련";
+}
+
 export function buildMarketCheck(
   a: QuestionResponseMap,
   rec: RecommendationOutput,
@@ -140,6 +156,11 @@ export function buildMarketCheck(
   return {
     verdict,
     score,
+    marketSummary: {
+      paidMarket: "유료 대안 확인 보류",
+      seekingPeople: "수요 근거 확인 보류",
+      firstTestDifficulty: firstTestDifficulty(rec),
+    },
     demandSignals,
     riskSignals,
     coaching:

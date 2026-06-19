@@ -35,6 +35,9 @@ test("web market research replaces inferred demand with sourced evidence", () =>
   assert.equal(report.marketCheck?.researchStatus, "supported");
   assert.equal(report.marketCheck?.sources.length, 3);
   assert.match(report.marketCheck?.demandSignals[0] ?? "", /비개발자/);
+  assert.match(report.marketCheck?.marketSummary?.paidMarket ?? "", /유사 자동화/);
+  assert.match(report.marketCheck?.marketSummary?.seekingPeople ?? "", /비개발자/);
+  assert.match(report.marketCheck?.marketSummary?.firstTestDifficulty ?? "", /낮음|보통|높음/);
   assert.doesNotMatch(
     report.marketCheck?.demandSignals.join("\n") ?? "",
     /첫 고객 후보에게 닿는 경로/,
@@ -62,6 +65,8 @@ test("fewer than two searches or three sources makes the market decision wait", 
   assert.equal(report.marketCheck?.verdict, "needs_evidence");
   assert.ok((report.marketCheck?.score ?? 100) <= 49);
   assert.match(report.marketCheck?.demandSignals[0] ?? "", /교차 확인하지 못했어요/);
+  assert.equal(report.marketCheck?.marketSummary?.paidMarket, "유료 대안 확인 보류");
+  assert.equal(report.marketCheck?.marketSummary?.seekingPeople, "수요 근거 확인 보류");
 });
 
 test("search failure keeps report delivery honest instead of failing completion", () => {
@@ -71,6 +76,7 @@ test("search failure keeps report delivery honest instead of failing completion"
   assert.equal(report.marketCheck?.verdict, "needs_evidence");
   assert.ok((report.marketCheck?.score ?? 100) <= 49);
   assert.match(report.marketCheck?.demandSignals[0] ?? "", /판단을 보류/);
+  assert.equal(report.marketCheck?.marketSummary?.paidMarket, "유료 대안 확인 보류");
 });
 
 test("market research requests exactly two searches and keeps cited source URLs", async () => {

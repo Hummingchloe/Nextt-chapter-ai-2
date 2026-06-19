@@ -59,6 +59,11 @@ export interface ReportSection {
     verdict: "ready_to_test" | "needs_narrowing" | "needs_evidence";
     score: number;
     researchStatus?: "supported" | "insufficient" | "unavailable";
+    marketSummary?: {
+      paidMarket: string;
+      seekingPeople: string;
+      firstTestDifficulty: string;
+    };
     demandSignals: string[];
     riskSignals: string[];
     coaching: string;

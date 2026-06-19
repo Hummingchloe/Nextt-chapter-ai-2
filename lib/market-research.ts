@@ -68,6 +68,16 @@ function evidenceScore(types: Set<EvidenceType>, sourceCount: number): number {
   return Math.min(88, score);
 }
 
+function summaryText(
+  signals: { type: EvidenceType; text: string }[],
+  types: EvidenceType[],
+  fallback: string,
+): string {
+  const text = signals.find((signal) => types.includes(signal.type))?.text;
+  if (!text) return fallback;
+  return text.length <= 76 ? text : `${text.slice(0, 75).trim()}…`;
+}
+
 export function applyWebResearch(
   report: ReportSection,
   result: WebResearchResult | null,
@@ -83,6 +93,12 @@ export function applyWebResearch(
         researchStatus: "unavailable",
         score: Math.min(market.score, 49),
         verdict: "needs_evidence",
+        marketSummary: {
+          paidMarket: "유료 대안 확인 보류",
+          seekingPeople: "수요 근거 확인 보류",
+          firstTestDifficulty:
+            market.marketSummary?.firstTestDifficulty ?? "첫 검증 난이도 확인 보류",
+        },
         demandSignals: ["현재 웹 조사를 완료하지 못해 시장 근거 판단을 보류했어요."],
         riskSignals: [
           "공개 근거를 다시 확인하기 전에는 실제 수요가 확인됐다고 보기 어려워요.",
@@ -126,6 +142,12 @@ export function applyWebResearch(
         researchStatus: "insufficient",
         score: Math.min(market.score, 49),
         verdict: "needs_evidence",
+        marketSummary: {
+          paidMarket: "유료 대안 확인 보류",
+          seekingPeople: "수요 근거 확인 보류",
+          firstTestDifficulty:
+            market.marketSummary?.firstTestDifficulty ?? "첫 검증 난이도 확인 보류",
+        },
         demandSignals: [
           "서로 다른 공개 출처 3개 이상에서 시장 근거를 교차 확인하지 못했어요.",
         ],
@@ -163,6 +185,20 @@ export function applyWebResearch(
       researchStatus: "supported",
       score,
       verdict,
+      marketSummary: {
+        paidMarket: summaryText(
+          signals,
+          ["payment"],
+          "유료 대안 확인 보류",
+        ),
+        seekingPeople: summaryText(
+          signals,
+          ["search", "problem"],
+          "수요 근거 확인 보류",
+        ),
+        firstTestDifficulty:
+          market.marketSummary?.firstTestDifficulty ?? "첫 검증 난이도 확인 보류",
+      },
       demandSignals: signals.slice(0, 4).map((signal) => signal.text),
       riskSignals,
       coaching:
