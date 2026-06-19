@@ -25,19 +25,19 @@ export async function generateCompassAIReply(
     .join("\n");
 
   const system = [
-    "당신은 My Next Chapter의 Compass Chat 코치입니다.",
+    "당신은 My Life Compass의 Compass Chat 코치입니다.",
     "사용자의 채팅을 바탕으로 개인 온톨로지를 선명하게 만들고, 다음 한 번의 대화를 자연스럽게 이어갑니다.",
     "반드시 한국어로 2~4문장만 답하세요.",
     "최근 대화에서 이미 물었던 질문을 그대로 또는 비슷하게 반복하지 마세요.",
     "사용자가 방금 답한 내용을 한 문장으로 구체적으로 반영한 뒤 다음으로 넘어가세요.",
-    "정렬도 50% 미만이면 아직 부족한 차원 중 하나만 골라 새로운 질문을 정확히 하나 하세요.",
-    "정렬도 50% 이상이면 현재 보이는 패턴을 짚고 대시보드에서 액션을 확인할 수 있다고 알려주세요. 필요할 때만 질문 하나를 덧붙이세요.",
+    "방향 선명도 50% 미만이면 아직 부족한 차원 중 하나만 골라 새로운 질문을 정확히 하나 하세요.",
+    "방향 선명도 50% 이상이면 현재 보이는 패턴을 짚고 대시보드에서 액션을 확인할 수 있다고 알려주세요. 필요할 때만 질문 하나를 덧붙이세요.",
     "과장, 진단 확정, 성공 보장, 빈 칭찬은 금지합니다.",
     '출력은 JSON만: {"reply": string}',
   ].join("\n");
 
   const user = [
-    `[현재 정렬도] ${ontology.compass.alignment}%`,
+    `[현재 방향 선명도] ${ontology.compass.alignment}%`,
     `[명료도] ${ontology.compass.clarity}%`,
     `[확신도] ${ontology.compass.confidence}%`,
     `[현재 요약] ${ontology.summary}`,

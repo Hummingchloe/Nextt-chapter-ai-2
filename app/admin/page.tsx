@@ -239,7 +239,7 @@ export default function AdminPage() {
                     {s.notes && s.notes.length > 0 && (
                       <details className="rounded-xl bg-surface p-3">
                         <summary className="cursor-pointer font-semibold text-ink-soft">
-                          My Next Chapter Note ({s.notes.length}개)
+                          My Life Compass Note ({s.notes.length}개)
                         </summary>
                         <div className="mt-3 space-y-2 text-ink">
                           {s.notes.map((n) => (

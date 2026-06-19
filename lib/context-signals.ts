@@ -20,10 +20,10 @@ export interface ContextSignalExtraction {
 
 const AI_HINTS = ["ai", "챗gpt", "chatgpt", "자동화", "프롬프트", "노션", "디지털", "canva", "캔바"];
 const TEACH_HINTS = ["가르", "설명", "강의", "수업", "클래스", "알려"];
-const CONNECT_HINTS = ["모임", "연결", "소개", "커뮤니티", "교회", "봉사", "정착", "행사"];
+const CONNECT_HINTS = ["모임", "연결", "소개", "커뮤니티", "협업", "네트워크", "밋업", "행사"];
 const PROFESSIONAL_HINTS = ["마케팅", "금융", "교사", "상담", "컨설", "개발", "디자인", "미용", "회계", "기획"];
 const PAY_HINTS = ["돈", "가격", "유료", "팔", "수익", "고객", "시장"];
-const TIME_HINTS = ["시간", "바빠", "육아", "가족", "주말"];
+const TIME_HINTS = ["시간", "바빠", "가족", "주말", "퇴근", "업무"];
 
 function includesAny(text: string, hints: string[]): boolean {
   const t = text.toLowerCase();

@@ -307,7 +307,7 @@ export default async function ResultPage({
           </p>
         </div>
 
-        {/* 다음 단계 — 오늘의 첫 걸음 (My Next Chapter Note) */}
+        {/* 다음 단계 — 오늘의 첫 걸음 (My Life Compass Note) */}
         <div className="bg-warm-glow rounded-3xl border border-clay/30 bg-surface px-7 py-9 text-center shadow-soft">
           <span className="text-3xl">🌅</span>
           <h2 className="mt-4 font-display text-xl font-bold leading-snug text-ink sm:text-2xl">
@@ -325,6 +325,23 @@ export default async function ResultPage({
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-clay px-7 py-3.5 font-semibold text-white shadow-soft transition hover:bg-clay-deep active:scale-[0.99]"
           >
             오늘의 작은 행동 보기 →
+          </Link>
+        </div>
+
+        {/* Minimal safe handoff: first report -> chat entry. */}
+        <div className="rounded-3xl border border-line bg-surface px-7 py-9 text-center shadow-soft">
+          <h2 className="font-display text-xl font-bold leading-snug text-ink sm:text-2xl">
+            이제 채팅에서 이어가볼까요?
+          </h2>
+          <p className="mt-3 leading-relaxed text-ink-soft">
+            첫 리포트는 출발점이에요. 오늘 느낀 점이나 바로 해볼 일을 채팅에
+            남기면 나침반이 조금씩 더 선명해집니다.
+          </p>
+          <Link
+            href="/chat"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3.5 font-semibold text-white shadow-soft transition hover:opacity-90 active:scale-[0.99]"
+          >
+            채팅에서 이어가기 →
           </Link>
         </div>
 

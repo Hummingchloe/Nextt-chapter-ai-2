@@ -81,7 +81,7 @@ const SIGNAL_RULES: {
     id: "asset_community",
     kind: "asset",
     label: "사람을 연결하고 커뮤니티를 만드는 관계 자산",
-    hints: ["모임", "커뮤니티", "소개", "연결", "네트워크", "교회", "봉사", "행사"],
+    hints: ["모임", "커뮤니티", "소개", "연결", "네트워크", "협업", "밋업", "행사"],
     weight: 8,
   },
   {
@@ -102,7 +102,7 @@ const SIGNAL_RULES: {
     id: "blocker_time",
     kind: "blocker",
     label: "시간과 에너지 제약 안에서 작게 움직여야 하는 상태",
-    hints: ["시간", "바빠", "육아", "가족", "피곤", "주말", "퇴근"],
+    hints: ["시간", "바빠", "가족", "피곤", "주말", "퇴근", "업무"],
     weight: 6,
   },
   {
@@ -291,7 +291,7 @@ function buildSummary(signals: OntologySignal[], compass: CompassSnapshot): stri
     assets.length ? `자산: ${assets.join(" / ")}` : "",
     market ? `시장 신호: ${market}` : "",
     blocker ? `주의점: ${blocker}` : "",
-    `현재 정렬도 ${compass.alignment}%`,
+    `현재 방향 선명도 ${compass.alignment}%`,
   ].filter(Boolean);
   return pieces.join(" · ");
 }
@@ -299,12 +299,12 @@ function buildSummary(signals: OntologySignal[], compass: CompassSnapshot): stri
 function buildAssistantReply(ontology: UserOntology): string {
   const { compass } = ontology;
   if (compass.status === "ready") {
-    return `좋아요. 지금 정렬도는 ${compass.alignment}%예요. 이제 추천을 시작해도 되는 신호가 있습니다. 대시보드에서 오늘의 액션과 추천 링크를 확인할 수 있어요.`;
+    return `좋아요. 지금 방향 선명도는 ${compass.alignment}%예요. 이제 추천을 시작해도 되는 신호가 있습니다. 대시보드에서 오늘의 액션과 추천 링크를 확인할 수 있어요.`;
   }
   if (compass.status === "forming") {
-    return `조금 선명해졌어요. 현재 정렬도는 ${compass.alignment}%예요. 아직은 강한 추천보다 질문이 더 유효합니다. ${compass.nextQuestion}`;
+    return `조금 선명해졌어요. 현재 방향 선명도는 ${compass.alignment}%예요. 아직은 강한 추천보다 질문이 더 유효합니다. ${compass.nextQuestion}`;
   }
-  return `기록했어요. 현재는 정렬도 ${compass.alignment}%라서 판단보다 맥락 수집 단계예요. ${compass.nextQuestion}`;
+  return `기록했어요. 현재는 방향 선명도 ${compass.alignment}%라서 판단보다 맥락 수집 단계예요. ${compass.nextQuestion}`;
 }
 
 function confidenceFor(text: string, hints: string[]): number {

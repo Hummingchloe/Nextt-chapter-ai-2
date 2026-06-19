@@ -45,8 +45,8 @@ export function buildProposalDashboard(ontology: UserOntology): ProposalDashboar
   return {
     ready,
     gateMessage: ready
-      ? "정렬도 50%를 넘어서 작은 실행과 콘텐츠 추천을 시작할 수 있어요."
-      : `아직 정렬도 ${ontology.compass.alignment}%예요. 추천보다 질문이 먼저입니다: ${ontology.compass.nextQuestion}`,
+      ? "방향이 충분히 선명해져 작은 실행과 콘텐츠 추천을 시작할 수 있어요."
+      : `아직 방향 선명도는 ${ontology.compass.alignment}%예요. 추천보다 질문이 먼저입니다: ${ontology.compass.nextQuestion}`,
     actions: ready ? buildActions(ontology) : [],
     youtubeLinks: ready ? buildYoutubeLinks(ontology) : [],
     userSummary: buildUserSummary(ontology),
@@ -107,7 +107,7 @@ function buildYoutubeLinks(ontology: UserOntology): ProposalLink[] {
       id: "offer",
       title: `${query} 첫 오퍼 만들기`,
       url: youtubeSearchUrl(`${query} first offer validation`),
-      why: "정렬도가 생긴 뒤에는 긴 공부보다 첫 제안 문장이 먼저입니다.",
+      why: "방향이 선명해진 뒤에는 긴 공부보다 첫 제안 문장이 먼저입니다.",
     },
     {
       id: "customer",
