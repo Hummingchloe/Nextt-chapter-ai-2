@@ -141,6 +141,12 @@ test("first report UI contract: presentation stays data-driven and preserves the
   assert.match(page, /r\.strengths/);
   assert.match(page, /r\.topRecommendation/);
   assert.match(page, /r\.marketCheck/);
+  assert.match(page, /시장 근거 형성도/);
+  assert.match(page, /유료 대안/);
+  assert.match(page, /찾는 사람/);
+  assert.match(page, /첫 검증 난이도/);
+  assert.match(page, /상세 시장 근거 보기/);
+  assert.match(page, /다음 단계 제안/);
   assert.match(page, /href="\/chat"/);
   assert.match(page, /ResultActions/);
   assert.doesNotMatch(page, /회당 5~10만원|꾸준한 수요|진입 장벽 낮음/);
