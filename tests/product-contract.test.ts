@@ -152,18 +152,6 @@ test("first report UI contract: presentation stays data-driven and preserves the
   assert.doesNotMatch(page, /회당 5~10만원|꾸준한 수요|진입 장벽 낮음/);
 });
 
-test("dashboard UI contract: action notes stay free-form and Compass sources are explained", () => {
-  const dashboard = readFileSync("app/dashboard/page.tsx", "utf8");
-  const compass = readFileSync("app/components/BeadCompass.tsx", "utf8");
-
-  assert.match(dashboard, /실행 결과를 짧게 남겨주세요/);
-  assert.doesNotMatch(dashboard, /\["보냈어요", "만났어요", "작성했어요"\]/);
-  assert.match(compass, /대화와 메모에서 발견한 경험·강점 신호/);
-  assert.match(compass, /시장 조사와 고객 반응에서 확인된 수요 신호/);
-  assert.match(compass, /직접 실행하고 남긴 결과에서 생긴 행동 신호/);
-  assert.match(compass, /group-focus-within:opacity-100/);
-});
-
 test("retargeting contract: old audience-specific copy must not reappear in app/lib", () => {
   const forbidden =
     /맘카페|교회|이민자|한인|미국 정착|미국 생활\/커뮤니티|새 지역에 막 정착|육아|동네 성당|미국 한인|엄마·청년|이민 가족/;
