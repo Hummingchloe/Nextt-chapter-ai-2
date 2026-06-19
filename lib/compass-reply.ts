@@ -1,5 +1,7 @@
 import "server-only";
 
+import { BRAND } from "./brand";
+
 // ─────────────────────────────────────────────────────────────
 // Coach reply — the conversational layer.
 //
@@ -70,7 +72,7 @@ export async function generateCoachReply(opts: {
     .join("\n");
 
   const system = [
-    "당신은 'My Next Chapter'의 Compass 코치입니다. 다시 일의 방향을 찾으려는 사람과 편안하게 대화합니다.",
+    `당신은 '${BRAND.name}'의 Compass 코치입니다. 다시 일의 방향을 찾으려는 사람과 편안하게 대화합니다.`,
     "",
     "원칙:",
     "- 방금 사용자가 한 말의 '구체적인 내용 한 가지'를 콕 집어 사람처럼 반응하세요(판교, 엄마·아이, 게임 만들기처럼 실제 디테일).",

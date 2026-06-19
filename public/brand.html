@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Lompass — Brand</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <style>
+      :root {
+        --bg: #f7f9fb;
+        --surface: #ffffff;
+        --line: #e5e8eb;
+        --line-soft: #f2f4f6;
+        --ink: #191f28;
+        --ink-2: #333d4b;
+        --ink-3: #4e5968;
+        --ink-4: #8b95a1;
+        --ink-5: #b0b8c1;
+
+        --blue: #3182f6;
+        --blue-deep: #1b64da;
+        --blue-soft: #e8f3ff;
+        --blue-faint: #f4f8ff;
+
+        --green: #2cb67d;
+        --amber: #f5a623;
+        --red:   #e93b3b;
+
+        --sans: "Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,
+          system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+
+        --r-sm: 10px;
+        --r-md: 14px;
+        --r-lg: 20px;
+        --r-xl: 28px;
+      }
+      *,*::before,*::after { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        letter-spacing: -0.018em;
+        word-break: keep-all;
+        line-height: 1.5;
+      }
+      ::selection { background: var(--blue-soft); color: var(--blue-deep); }
+      a { color: var(--blue); text-decoration: none; }
+      code { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 0.92em;
+        background: var(--line-soft); padding: 2px 6px; border-radius: 6px; color: var(--ink-2); }
+
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+      @media (max-width: 720px) { .wrap { padding: 0 20px; } }
+
+      /* ─── Top bar ─── */
+      .nav {
+        position: sticky; top: 0; z-index: 50;
+        background: rgba(247,249,251,.85);
+        backdrop-filter: saturate(180%) blur(16px);
+        border-bottom: 1px solid var(--line);
+      }
+      .nav-inner {
+        display: flex; align-items: center; justify-content: space-between;
+        height: 64px;
+      }
+      .brand-mark { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
+      .brand-mark .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); display: inline-block; }
+      .nav nav { display: flex; gap: 28px; font-size: 14px; color: var(--ink-3); font-weight: 500; }
+      .nav nav a { color: inherit; }
+      .nav nav a:hover { color: var(--ink); }
+      @media (max-width: 760px) { .nav nav { display: none; } }
+
+      /* ─── Hero ─── */
+      .hero { padding: 120px 0 96px; }
+      .hero .tag {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--blue-soft); color: var(--blue-deep);
+        font-size: 13px; font-weight: 700; letter-spacing: -0.01em;
+        padding: 6px 12px; border-radius: 999px;
+      }
+      .hero h1 {
+        font-size: clamp(44px, 7.2vw, 92px);
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -0.04em;
+        margin: 24px 0 28px;
+        color: var(--ink);
+      }
+      .hero h1 .accent { color: var(--blue); }
+      .hero p.sub {
+        font-size: 19px; line-height: 1.6;
+        color: var(--ink-3); max-width: 620px; margin: 0;
+        letter-spacing: -0.018em;
+      }
+      .hero .meta-row {
+        margin-top: 56px;
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 24px; border-top: 1px solid var(--line); padding-top: 24px;
+      }
+      @media (max-width: 720px) { .hero .meta-row { grid-template-columns: 1fr; gap: 12px; } }
+      .hero .meta-row > div { display: flex; flex-direction: column; gap: 4px; }
+      .hero .meta-row .k { font-size: 12px; font-weight: 600; color: var(--ink-4); letter-spacing: 0; }
+      .hero .meta-row .v { font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+
+      /* ─── Section ─── */
+      section.s { padding: 88px 0; border-top: 1px solid var(--line); }
+      .s-head { display: flex; align-items: baseline; gap: 18px; margin-bottom: 40px; flex-wrap: wrap; }
+      .s-num {
+        font-size: 14px; font-weight: 700; color: var(--blue);
+        letter-spacing: 0; padding: 4px 10px; background: var(--blue-soft); border-radius: 999px;
+      }
+      .s-title {
+        font-size: clamp(28px, 4vw, 44px);
+        font-weight: 800; letter-spacing: -0.035em;
+        margin: 0; color: var(--ink); line-height: 1.18;
+      }
+      .s-sub { color: var(--ink-3); font-size: 17px; line-height: 1.62; max-width: 720px; margin: 12px 0 0; letter-spacing: -0.018em; }
+
+      /* ─── Identity card ─── */
+      .identity {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-xl);
+        padding: 48px;
+        display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px;
+      }
+      @media (max-width: 900px) { .identity { grid-template-columns: 1fr; padding: 32px 24px; gap: 32px; } }
+      .identity .lead {
+        font-size: clamp(22px, 2.6vw, 30px);
+        font-weight: 700; line-height: 1.4; letter-spacing: -0.028em;
+        color: var(--ink); margin: 0;
+      }
+      .identity .lead .blue { color: var(--blue); }
+      .identity dl { margin: 0; display: grid; gap: 20px; }
+      .identity dt { font-size: 12px; font-weight: 700; color: var(--ink-4); letter-spacing: 0; margin-bottom: 6px; text-transform: uppercase; }
+      .identity dd { margin: 0; font-size: 15px; line-height: 1.6; color: var(--ink-2); font-weight: 500; letter-spacing: -0.018em; }
+      .identity dd strong { color: var(--ink); font-weight: 700; }
+
+      /* ─── Status board ─── */
+      .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      @media (max-width: 900px) { .status-grid { grid-template-columns: 1fr; } }
+      .status-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 24px;
+        display: flex; flex-direction: column; gap: 10px;
+      }
+      .status-card .badge {
+        align-self: flex-start;
+        font-size: 12px; font-weight: 700; padding: 4px 10px;
+        border-radius: 999px; letter-spacing: 0;
+      }
+      .status-card.locked .badge { background: #e9f7f0; color: #18794e; }
+      .status-card.draft  .badge { background: #fff4e0; color: #a05c00; }
+      .status-card.open   .badge { background: var(--blue-soft); color: var(--blue-deep); }
+      .status-card h3 { font-size: 18px; font-weight: 700; letter-spacing: -0.025em; margin: 4px 0 0; color: var(--ink); }
+      .status-card p { font-size: 14px; line-height: 1.55; color: var(--ink-3); margin: 0; font-weight: 500; letter-spacing: -0.018em; }
+
+      /* ─── Palette ─── */
+      .pal-row { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; margin-bottom: 28px; }
+      @media (max-width: 720px) { .pal-row { grid-template-columns: 1fr; gap: 14px; } }
+      .pal-row .label {
+        font-size: 13px; font-weight: 700; color: var(--ink-4);
+        letter-spacing: 0; text-transform: uppercase;
+        padding-top: 12px;
+      }
+      .pal-row .label small { display: block; color: var(--ink-3); font-size: 12px; font-weight: 500; text-transform: none; margin-top: 4px; }
+      .swatches { display: grid; gap: 12px; }
+      .swatches.c4 { grid-template-columns: repeat(4, 1fr); }
+      .swatches.c3 { grid-template-columns: repeat(3, 1fr); }
+      @media (max-width: 720px) { .swatches.c4, .swatches.c3 { grid-template-columns: repeat(2, 1fr); } }
+      .sw {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--r-md); overflow: hidden;
+        display: flex; flex-direction: column;
+      }
+      .sw .chip { aspect-ratio: 16/9; }
+      .sw .meta { padding: 12px 14px; }
+      .sw .nm { font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+      .sw .hx { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 11px; color: var(--ink-4); margin-top: 2px; letter-spacing: 0.02em; }
+
+      /* ─── Type ─── */
+      .type-stack { display: grid; gap: 12px; }
+      .type-row {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 32px 36px;
+        display: grid; grid-template-columns: 160px 1fr; gap: 32px; align-items: center;
+      }
+      @media (max-width: 720px) { .type-row { grid-template-columns: 1fr; padding: 24px; gap: 14px; } }
+      .type-row .spec {
+        font-family: ui-monospace,"SF Mono",Menlo,monospace;
+        font-size: 11px; color: var(--ink-4); letter-spacing: 0.02em; line-height: 1.6;
+      }
+      .type-row .spec strong { display: block; color: var(--ink); font-family: var(--sans); font-size: 13px; letter-spacing: 0; margin-bottom: 4px; }
+      .display-1 { font-size: clamp(40px, 5.2vw, 64px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.08; margin: 0; color: var(--ink); }
+      .display-1 .blue { color: var(--blue); }
+      .display-2 { font-size: clamp(28px, 3.6vw, 40px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.2; margin: 0; color: var(--ink); }
+      .body-l { font-size: 18px; line-height: 1.65; font-weight: 500; margin: 0; color: var(--ink-2); letter-spacing: -0.018em; }
+      .body-m { font-size: 15px; line-height: 1.6; font-weight: 500; margin: 0; color: var(--ink-2); letter-spacing: -0.018em; }
+      .caption { font-size: 13px; line-height: 1.5; font-weight: 500; margin: 0; color: var(--ink-4); letter-spacing: -0.014em; }
+
+      /* ─── Voice ─── */
+      .voice { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 900px) { .voice { grid-template-columns: 1fr; } }
+      .voice-card {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--r-xl); padding: 32px;
+      }
+      .voice-card .head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+      .voice-card .head .label {
+        font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; letter-spacing: 0;
+      }
+      .voice-card.do  .head .label { background: #e9f7f0; color: #18794e; }
+      .voice-card.dont .head .label { background: #fdebec; color: #c63838; }
+      .voice-card h3 { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; margin: 0; color: var(--ink); }
+      .voice-card ul { margin: 24px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+      .voice-card li { display: grid; grid-template-columns: 20px 1fr; gap: 12px; align-items: start;
+        font-size: 15px; line-height: 1.55; color: var(--ink-2); font-weight: 500; letter-spacing: -0.018em; }
+      .voice-card li::before {
+        content: ""; margin-top: 7px; width: 14px; height: 14px; border-radius: 4px;
+      }
+      .voice-card.do li::before  { background: #e9f7f0; box-shadow: inset 0 0 0 1.5px #18794e; }
+      .voice-card.dont li::before { background: #fdebec; box-shadow: inset 0 0 0 1.5px #c63838; }
+      .voice-card .pills {
+        margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line);
+        display: flex; flex-wrap: wrap; gap: 8px;
+      }
+      .voice-card .pills .key {
+        flex-basis: 100%; font-size: 11px; color: var(--ink-4); font-weight: 700; margin-bottom: 4px;
+        letter-spacing: 0; text-transform: uppercase;
+      }
+      .voice-card .pill {
+        font-size: 13.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+        background: var(--line-soft); color: var(--ink-2); letter-spacing: -0.014em;
+      }
+      .voice-card.do .pill  { background: #eaf6f0; color: #18794e; }
+      .voice-card.dont .pill { background: #fceced; color: #c63838; }
+
+      /* ─── Logo ─── */
+      .logo-grid { display: grid; grid-template-columns: 1.2fr .9fr; gap: 16px; }
+      @media (max-width: 900px) { .logo-grid { grid-template-columns: 1fr; } }
+      .logo-stage {
+        border-radius: var(--r-xl); padding: 48px;
+        display: flex; flex-direction: column; gap: 28px;
+        min-height: 280px; justify-content: space-between;
+      }
+      .logo-stage.light { background: var(--surface); border: 1px solid var(--line); }
+      .logo-stage.dark  { background: var(--ink); color: #fff; }
+      .logo-stage .stage-label { font-size: 12px; font-weight: 700; color: var(--ink-4); letter-spacing: 0; text-transform: uppercase; }
+      .logo-stage.dark .stage-label { color: #8b95a1; }
+      .logo-wm { display: flex; align-items: center; gap: 14px; }
+      .logo-wm svg { width: 44px; height: 44px; }
+      .logo-wm .text { font-size: 30px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; }
+      .logo-wm .text .blue { color: var(--blue); }
+      .logo-stage.dark .logo-wm .text .blue { color: #69a8ff; }
+      .logo-note { font-size: 13px; line-height: 1.55; color: var(--ink-3); font-weight: 500; letter-spacing: -0.018em; }
+      .logo-stage.dark .logo-note { color: #b0b8c1; }
+
+      .icon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .icon-cell {
+        border-radius: var(--r-md);
+        padding: 28px;
+        display: flex; align-items: center; justify-content: center;
+        min-height: 132px;
+      }
+      .icon-cell.light { background: var(--blue-soft); }
+      .icon-cell.dark { background: var(--ink); }
+      .icon-cell svg { width: 54px; height: 54px; }
+
+      /* ─── UI mocks ─── */
+      .ui-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 900px) { .ui-grid { grid-template-columns: 1fr; } }
+      .mock {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--r-xl); padding: 28px;
+      }
+      .mock .label { font-size: 12px; font-weight: 700; color: var(--ink-4); letter-spacing: 0; text-transform: uppercase; margin-bottom: 16px; }
+
+      .bubble {
+        font-size: 15px; line-height: 1.6; padding: 14px 18px; border-radius: 16px;
+        margin-bottom: 10px; max-width: 92%; font-weight: 500; letter-spacing: -0.018em;
+      }
+      .bubble.coach { background: var(--line-soft); color: var(--ink-2); border-top-left-radius: 6px; }
+      .bubble.user  { background: var(--blue); color: #fff; margin-left: auto; border-top-right-radius: 6px; }
+
+      .action {
+        margin-top: 14px; background: var(--blue-faint); border: 1px solid #d8e6ff;
+        border-radius: var(--r-md); padding: 18px;
+      }
+      .action .k { font-size: 12px; font-weight: 700; color: var(--blue-deep); letter-spacing: 0; margin: 0 0 6px; text-transform: uppercase; }
+      .action .v { font-size: 16px; font-weight: 700; color: var(--ink); margin: 0; letter-spacing: -0.022em; line-height: 1.5; }
+
+      .btn-row { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+      .btn {
+        font-family: var(--sans); font-weight: 700; font-size: 15px;
+        letter-spacing: -0.02em;
+        padding: 12px 20px; border-radius: 12px;
+        border: 1px solid transparent; cursor: pointer;
+        transition: background .12s ease, transform .08s ease;
+      }
+      .btn.primary { background: var(--blue); color: #fff; }
+      .btn.primary:hover { background: var(--blue-deep); }
+      .btn.secondary { background: var(--ink); color: #fff; }
+      .btn.ghost { background: var(--line-soft); color: var(--ink); }
+      .btn.ghost:hover { background: var(--line); }
+
+      .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+      .ttag {
+        font-size: 13px; font-weight: 600; padding: 5px 10px; border-radius: 8px;
+        background: var(--line-soft); color: var(--ink-2); letter-spacing: -0.014em;
+      }
+      .ttag.blue { background: var(--blue-soft); color: var(--blue-deep); }
+
+      .dash-stat { padding: 24px 4px 8px; text-align: center; }
+      .dash-stat .big {
+        font-size: 56px; font-weight: 800; letter-spacing: -0.04em;
+        margin: 0; color: var(--ink); line-height: 1;
+      }
+      .dash-stat .big small { font-size: 28px; font-weight: 700; color: var(--ink-3); letter-spacing: -0.02em; }
+      .dash-stat .lbl { font-size: 13px; color: var(--ink-4); margin: 8px 0 0; font-weight: 600; letter-spacing: -0.014em; }
+      .dash-bar {
+        margin-top: 18px; height: 8px; background: var(--line-soft); border-radius: 999px; overflow: hidden;
+      }
+      .dash-bar .fill { height: 100%; width: 62%; background: var(--blue); border-radius: 999px; }
+
+      .dir-line {
+        margin-top: 22px; padding: 16px 18px;
+        background: var(--line-soft); border-radius: 12px;
+        font-size: 16px; font-weight: 700; letter-spacing: -0.024em; color: var(--ink);
+      }
+      .dir-line small { display: block; font-size: 13px; color: var(--ink-4); margin-top: 4px; font-weight: 600; letter-spacing: -0.018em; }
+
+      /* ─── Open ─── */
+      .q-list { display: grid; gap: 10px; }
+      .q {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--r-md); padding: 20px 24px;
+        display: grid; grid-template-columns: 32px 1fr; gap: 16px; align-items: baseline;
+      }
+      .q .n { font-size: 18px; font-weight: 800; color: var(--blue); letter-spacing: -0.02em; }
+      .q .body { font-size: 16px; font-weight: 600; color: var(--ink); letter-spacing: -0.022em; line-height: 1.5; }
+      .q .body small { display: block; font-size: 13.5px; color: var(--ink-3); margin-top: 4px; font-weight: 500; letter-spacing: -0.018em; }
+
+      /* ─── Foot ─── */
+      footer.foot {
+        padding: 56px 0 88px; border-top: 1px solid var(--line);
+        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+        color: var(--ink-4); font-size: 13.5px; font-weight: 500; letter-spacing: -0.014em;
+      }
+      footer.foot strong { color: var(--ink-2); font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <!-- Top -->
+    <div class="nav">
+      <div class="wrap nav-inner">
+        <div class="brand-mark">
+          <span class="dot"></span>
+          Lompass
+        </div>
+        <nav>
+          <a href="#identity">Identity</a>
+          <a href="#status">Status</a>
+          <a href="#palette">Palette</a>
+          <a href="#type">Type</a>
+          <a href="#voice">Voice</a>
+          <a href="#logo">Logo</a>
+          <a href="#ui">UI</a>
+          <a href="#open">Open</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <header class="hero">
+      <div class="wrap">
+        <span class="tag">● Brand Book · Draft v0.4</span>
+        <h1>
+          방향이<br/>
+          <span class="accent">조금 더 선명해지는</span><br/>
+          일상의 컴퍼스.
+        </h1>
+        <p class="sub"><strong style="color:var(--ink);font-weight:700;">Lompass</strong>는 "내가 다음에 어떤 일을 할 수 있을까"가 막막한 사람이 매일의 대화를 쌓아가며 자신의 방향을 또렷이 만드는 서비스입니다. 이 문서는 그 시각·언어·톤을 한 곳에서 정의합니다.</p>
+        <div class="meta-row">
+          <div><span class="k">Name</span><span class="v">Lompass</span></div>
+          <div><span class="k">Issued</span><span class="v">2026.06.19</span></div>
+          <div><span class="k">Source of truth</span><span class="v">lib/brand.ts</span></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 01 Identity -->
+    <section id="identity" class="s">
+      <div class="wrap">
+        <div class="s-head">
+          <span class="s-num">01</span>
+          <h2 class="s-title">Identity</h2>
+        </div>
+        <p class="s-sub">서비스의 성격을 한 문장으로 잠근다. 모든 시각·언어 결정은 이 문장을 통과한다.</p>
+        <div class="identity" style="margin-top: 32px;">
+          <p class="lead">
+            막막한 다음 방향을<br/>
+            <span class="blue">매일의 대화로</span> 조금씩 또렷하게.
+          </p>
+          <dl>
+            <div><dt>Working one-liner</dt><dd>Helps people unsure about their next direction clarify it through daily conversation and small actions.</dd></div>
+            <div><dt>Desired impression</dt><dd><strong>Warm · Calm · Trustworthy.</strong> 일에 대한 결정을 맡길 수 있을 만큼 프로페셔널하지만, 매일 들르는 동반자만큼 가깝다. Quietly premium.</dd></div>
+            <div><dt>Avoid</dt><dd>점성·타로·신비주의 · HR SaaS 대시보드 · 장난스러운 생산성 앱 · AI/엔지니어 용어 · 어둡고 빽빽한 데이터 제품 UI</dd></div>
+            <div><dt>Core metaphor</dt><dd><strong>Compass, not horoscope.</strong> 방향·명료함·움직임. 운명·예언·마법적 확신은 아니다.</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 Status -->
+    <section id="status" class="s">
+      <div class="wrap">
+        <div class="s-head">
+          <span class="s-num">02</span>
+          <h2 class="s-title">Status Board</h2>
+        </div>
+        <p class="s-sub">지금 바꾸지 말 것과 다음 회의에서 결정할 것을 분리.</p>
+        <div class="status-grid" style="margin-top: 32px;">
+          <div class="status-card locked">
+            <span class="badge">Locked</span>
+            <h3>서비스명 · 메타포</h3>
+            <p>Lompass · 컴퍼스 모티프. OG·앱 아이콘·카피에서 동일하게 사용.</p>
+          </div>
+          <div class="status-card locked">
+            <span class="badge">Locked</span>
+            <h3>팔레트 · 타이포 페어링</h3>
+            <p>Mono base + Toss-Blue 단일 액센트. Pretendard 전 weight 사용. 추가 폰트·컬러 금지.</p>
+          </div>
+          <div class="status-card locked">
+            <span class="badge">Locked</span>
+            <h3>3탭 내비게이션</h3>
+            <p>Chat (중앙) · Dashboard · Roadmap. Roadmap은 비활성 상태로 노출 가능.</p>
+          </div>
+          <div class="status-card draft">
+            <span class="badge">Draft</span>
+            <h3>워드마크 표기</h3>
+            <p>"<span style="font-weight:800;">Lompass</span>" — 단어 단독 표기. 컴퍼스 마크와 함께 좌측 배치. weight 800.</p>
+          </div>
+          <div class="status-card draft">
+            <span class="badge">Draft</span>
+            <h3>컴퍼스 축 (factor)</h3>
+            <p>기록 · 방향 · 신호 · 행동 · 강점. 사용자 언어로 한 번 더 깎을 것.</p>
+          </div>
+          <div class="status-card open">
+            <span class="badge">Open</span>
+            <h3>1차 타겟 정의</h3>
+            <p>커리어 전환 · 솔로 비즈니스 · 라이프 디렉션 — 1순위 미결. 결정 시 hero 카피 재작성.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 Palette -->
+    <section id="palette" class="s">
+      <div class="wrap">
+        <div class="s-head">
+          <span class="s-num">03</span>
+          <h2 class="s-title">Palette</h2>
+        </div>
+        <p class="s-sub">기본은 무채색 · 액센트는 블루 한 가지. 데이터·결정을 다루기에 가볍고 또렷하게.</p>
+
+        <div class="pal-row" style="margin-top: 36px;">
+          <div class="label">Background<small>화면·카드 표면</small></div>
+          <div class="swatches c3">
+            <div class="sw"><div class="chip" style="background:#f7f9fb;"></div><div class="meta"><div class="nm">Background</div><div class="hx">#F7F9FB</div></div></div>
+            <div class="sw"><div class="chip" style="background:#ffffff;border-bottom:1px solid var(--line);"></div><div class="meta"><div class="nm">Surface</div><div class="hx">#FFFFFF</div></div></div>
+            <div class="sw"><div class="chip" style="background:#f2f4f6;"></div><div class="meta"><div class="nm">Subtle</div><div class="hx">#F2F4F6</div></div></div>
+          </div>
+        </div>
+
+        <div class="pal-row">
+          <div class="label">Ink<small>텍스트 위계 4단계</small></div>
+          <div class="swatches c4">
+            <div class="sw"><div class="chip" style="background:#191f28;"></div><div class="meta"><div class="nm">Ink 1</div><div class="hx">#191F28</div></div></div>
+            <div class="sw"><div class="chip" style="background:#333d4b;"></div><div class="meta"><div class="nm">Ink 2</div><div class="hx">#333D4B</div></div></div>
+            <div class="sw"><div class="chip" style="background:#4e5968;"></div><div class="meta"><div class="nm">Ink 3</div><div class="hx">#4E5968</div></div></div>
+            <div class="sw"><div class="chip" style="background:#8b95a1;"></div><div class="meta"><div class="nm">Ink 4</div><div class="hx">#8B95A1</div></div></div>
+          </div>
+        </div>
+
+        <div class="pal-row">
+          <div class="label">Accent<small>브랜드 컬러 · 강조 1색</small></div>
+          <div class="swatches c4">
+            <div class="sw"><div class="chip" style="background:#e8f3ff;"></div><div class="meta"><div class="nm">Blue Soft</div><div class="hx">#E8F3FF</div></div></div>
+            <div class="sw"><div class="chip" style="background:#3182f6;"></div><div class="meta"><div class="nm">Blue</div><div class="hx">#3182F6</div></div></div>
+            <div class="sw"><div class="chip" style="background:#1b64da;"></div><div class="meta"><div class="nm">Blue Deep</div><div class="hx">#1B64DA</div></div></div>
+            <div class="sw"><div class="chip" style="background:#0f4ba8;"></div><div class="meta"><div class="nm">Blue Ink</div><div class="hx">#0F4BA8</div></div></div>
+          </div>
+        </div>
+
+        <div class="pal-row">
+          <div class="label">Semantic<small>상태 표현</small></div>
+          <div class="swatches c3">
+            <div class="sw"><div class="chip" style="background:#2cb67d;"></div><div class="meta"><div class="nm">Success</div><div class="hx">#2CB67D</div></div></div>
+            <div class="sw"><div class="chip" style="background:#f5a623;"></div><div class="meta"><div class="nm">Warning</div><div class="hx">#F5A623</div></div></div>
+            <div class="sw"><div class="chip" style="background:#e93b3b;"></div><div class="meta"><div class="nm">Danger</div><div class="hx">#E93B3B</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 Type -->
+    <section id="type" class="s">
+      <div class="wrap">
+        <div class="s-head">
+          <span class="s-num">04</span>
+          <h2 class="s-title">Typography</h2>
+        </div>
+        <p class="s-sub">단일 패밀리 — Pretendard. weight 4단계, letter-spacing 음수, 단단하고 또렷한 위계.</p>
+
+        <div class="type-stack" style="margin-top: 36px;">
+          <div class="type-row">
+            <div class="spec"><strong>Display 1</strong>Pretendard 800<br/>56–64 / 1.08<br/>tracking −0.04em</div>
+            <p class="display-1">방향이 <span class="blue">또렷해지는</span> 매일.</p>
+          </div>
+          <div class="type-row">
+            <div class="spec"><strong>Display 2</strong>Pretendard 700<br/>32–40 / 1.2<br/>tracking −0.035em</div>
+            <p class="display-2">오늘의 작은 한 걸음이<br/>방향이 됩니다.</p>
+          </div>
+          <div class="type-row">
+            <div class="spec"><strong>Body Large</strong>Pretendard 500<br/>18 / 1.65<br/>tracking −0.018em</div>
+            <p class="body-l">매일의 대화에 작게 기록하세요. 컴퍼스가 신호를 모아 방향을 가리키고, 또렷해진 만큼 오늘 해볼 일과 추천 콘텐츠가 열립니다.</p>
+          </div>
+          <div class="type-row">
+            <div class="spec"><strong>Body Medium</strong>Pretendard 500<br/>15 / 1.6<br/>tracking −0.018em</div>
+            <p class="body-m">최근 7개의 기록을 바탕으로 한 추천입니다. 기록을 더 쌓을수록 신호가 또렷해집니다.</p>
+          </div>
+          <div class="type-row">
+            <div class="spec"><strong>Caption</strong>Pretendard 500<br/>13 / 1.5<br/>tracking −0.014em</div>
+            <p class="caption">컴퍼스는 신호의 합의를 측정합니다. 양이 아니라 방향의 일관성입니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 Voice -->
+    <section id="voice" class="s">
+      <div class="wrap">
+        <div class="s-head">
+          <span class="s-num">05</span>
+          <h2 class="s-title">Voice &amp; Tone</h2>
+        </div>
+        <p class="s-sub">설명하지 않고 짚어준다. 진단하지 않고 같이 본다. 숫자는 대시보드에만, 대화에는 사람의 말만.</p>
+
+        <div class="voice" style="margin-top: 32px;">
+          <div class="voice-card do">
+            <div class="head"><span class="label">DO</span></div>
+            <h3>이렇게 말한다</h3>
+            <ul>
+              <li>사용자가 한 말의 디테일을 콕 집어 반응한다</li>
+              <li>한 번에 신호 하나, 질문은 딱 하나</li>
+              <li>"오늘", "작은 한 걸음", "방향", "더 또렷해졌어요"</li>
+              <li>경험·강점을 사실로 인정하고 다음 행동으로 이어준다</li>
+              <li>실패도 안전하게 — "안전하게 저장했어요"</li>
+            </ul>
+            <div class="pills">
+              <span class="key">USE</span>
+              <span class="pill">방향</span>
+              <span class="pill">최근 기록</span>
+              <span class="pill">오늘 해볼 일</span>
+              <span class="pill">내 강점</span>
+              <span class="pill">밖에서 들어온 신호</span>
+              <span class="pill">조금 더 또렷해졌어요</span>
+            </div>
+          </div>
+          <div class="voice-card dont">
+            <div class="head"><span class="label">DON'T</span></div>
+            <h3>이렇게 말하지 않는다</h3>
+            <ul>
+              <li>"당신은 ~한 사람입니다" 같은 단정 진단</li>
+              <li>퍼센트·점수·정렬도를 대화 안에 노출</li>
+              <li>빈 칭찬, 연속된 심문형 질문</li>
+              <li>"엄마 / 이민자 여성 / 경력단절" 카테고리화</li>
+              <li>AI · 엔지니어 용어를 사용자 화면에 노출</li>
+            </ul>
+            <div class="pills">
+              <span class="key">AVOID</span>
+              <span class="pill">정렬도</span>
+              <span class="pill">온톨로지</span>
+              <span class="pill">벡터</span>
+              <span class="pill">구슬 수렴</span>
+              <span class="pill">제안 엔진</span>
+              <span class="pill">H / M</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 Logo -->
+    <section id="logo" class="s">
+      <div class="wrap">
+        <div class="s-head">
+          <span class="s-num">06</span>
+          <h2 class="s-title">Logo</h2>
+        </div>
+        <p class="s-sub">컴퍼스 바늘 한 점. 미니멀한 도형 + 단일 워드마크. 영문 한 단어로 또렷하게.</p>
+
+        <div class="logo-grid" style="margin-top: 32px;">
+          <div class="logo-stage light">
+            <span class="stage-label">Wordmark · light</span>
+            <div class="logo-wm">
+              <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                <circle cx="20" cy="20" r="18" stroke="#191F28" stroke-width="1.6"/>
+                <path d="M20 7 L23 21 L20 24 L17 21 Z" fill="#3182F6"/>
+                <circle cx="20" cy="20" r="2" fill="#191F28"/>
+              </svg>
+              <span class="text">Lompass</span>
+            </div>
+            <p class="logo-note">최소 가로 80px · 워드마크 둘레 여백은 컴퍼스 마크 높이의 0.5배 이상. "Life"+"Compass"의 합성어, 단독 표기.</p>
+          </div>
+          <div class="logo-stage dark">
+            <span class="stage-label">Wordmark · dark</span>
+            <div class="logo-wm">
+              <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                <circle cx="20" cy="20" r="18" stroke="#ffffff" stroke-width="1.6"/>
+                <path d="M20 7 L23 21 L20 24 L17 21 Z" fill="#69A8FF"/>
+                <circle cx="20" cy="20" r="2" fill="#ffffff"/>
+              </svg>
+              <span class="text" style="color:#fff;">Lompass</span>
+            </div>
+            <p class="logo-note">어두운 표면에서는 텍스트 White · 바늘 Blue-soft 사용.</p>
+          </div>
+        </div>
+
+        <div class="icon-grid" style="margin-top: 16px;">
+          <div class="icon-cell light">
+            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="18" stroke="#1B64DA" stroke-width="2"/>
+              <path d="M20 7 L23 21 L20 24 L17 21 Z" fill="#1B64DA"/>
+              <circle cx="20" cy="20" r="2" fill="#0F4BA8"/>
+            </svg>
+          </div>
+          <div class="icon-cell dark">
+            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="18" stroke="#69A8FF" stroke-width="2"/>
+              <path d="M20 7 L23 21 L20 24 L17 21 Z" fill="#69A8FF"/>
+              <circle cx="20" cy="20" r="2" fill="#ffffff"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 UI -->
+    <section id="ui" class="s">
+      <div class="wrap">
+        <div class="s-head">
+          <span class="s-num">07</span>
+          <h2 class="s-title">UI Preview</h2>
+        </div>
+        <p class="s-sub">팔레트·타입·보이스가 실제 화면에서 만나는 한 컷.</p>
+
+        <div class="ui-grid" style="margin-top: 32px;">
+          <div class="mock">
+            <p class="label">Chat</p>
+            <div class="bubble coach">어제 말씀한 "팀 매뉴얼을 다시 짠 일" — 그게 작지만 꽤 또렷한 신호예요. 그때 가장 막막했던 한 순간은 어떤 장면이에요?</div>
+            <div class="bubble user">사람들이 안 본다고 말한 순간이요. 그래서 형식부터 다시 짰어요.</div>
+            <div class="bubble coach">"형식부터 다시 짰다"는 말이 좋네요. 오늘 그 결을 한 번 더 살릴 작은 일이 있을까요?</div>
+            <div class="action">
+              <p class="k">오늘 해볼 일</p>
+              <p class="v">가장 편한 동료 한 사람에게 "요즘 그 매뉴얼 잘 보고 있어요?"라고 물어보기.</p>
+            </div>
+            <div class="btn-row">
+              <button class="btn primary">기록하기</button>
+              <button class="btn ghost">대시보드</button>
+            </div>
+          </div>
+
+          <div class="mock">
+            <p class="label">Dashboard</p>
+            <div class="dash-stat">
+              <p class="big">62<small>%</small></p>
+              <p class="lbl">방향이 또렷해지고 있어요</p>
+              <div class="dash-bar"><div class="fill"></div></div>
+            </div>
+            <div class="dir-line">
+              가르치는 일을 다시, 다르게.
+              <small>최근 7개 기록 기준 · 1주 전보다 +8</small>
+            </div>
+            <div class="tags">
+              <span class="ttag blue">교육 경험</span>
+              <span class="ttag blue">AI 도구</span>
+              <span class="ttag">소규모 운영</span>
+              <span class="ttag">커뮤니티 신호</span>
+            </div>
+            <div class="btn-row">
+              <button class="btn primary">자세히 보기</button>
+              <button class="btn ghost">최근 기록</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mock" style="margin-top: 16px;">
+          <p class="label">Hero · Landing</p>
+          <div style="padding: 48px 24px 56px; text-align: center;">
+            <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:var(--blue-soft);color:var(--blue-deep);font-size:13px;font-weight:700;">● 다음 방향을 함께 묻는 일상의 컴퍼스</span>
+            <p style="font-size:54px;font-weight:800;letter-spacing:-0.04em;line-height:1.08;margin:24px 0 14px;color:var(--ink);">방향이 <span style="color:var(--blue);">또렷해지는</span><br/>일상의 컴퍼스.</p>
+            <p style="font-size:17px;font-weight:500;line-height:1.6;color:var(--ink-3);max-width:520px;margin:0 auto;letter-spacing:-0.018em;">매일의 대화를 쌓아가며 다음 방향을 조금씩 또렷하게 만드세요.</p>
+            <div class="btn-row" style="justify-content:center;margin-top:28px;">
+              <button class="btn primary">대화 시작하기</button>
+              <button class="btn ghost">먼저 둘러보기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 Open -->
+    <section id="open" class="s">
+      <div class="wrap">
+        <div class="s-head">
+          <span class="s-num">08</span>
+          <h2 class="s-title">Open Questions</h2>
+        </div>
+        <p class="s-sub">결정되면 <code>lib/brand.ts</code>와 본 문서를 같이 업데이트.</p>
+
+        <div class="q-list" style="margin-top: 32px;">
+          <div class="q"><div class="n">01</div><div class="body">1차 타겟은 "커리어 전환" · "솔로 비즈니스" · "라이프 디렉션" 중 어디인가? <small>결정 후 hero 카피·painPoints·userTypes 전면 재작성.</small></div></div>
+          <div class="q"><div class="n">02</div><div class="body">제품의 느낌은 코치 · 저널 · 대시보드 · 컴퍼스 중 어느 쪽인가? <small>한 단어로 잠그면 카피·아이콘·인터랙션 톤이 일관해진다.</small></div></div>
+          <div class="q"><div class="n">03</div><div class="body">컴퍼스 축 라벨 — "기록 · 방향 · 신호 · 행동 · 강점" 그대로 가나? <small>사용자 언어로 한 번 더 다듬을 것.</small></div></div>
+          <div class="q"><div class="n">04</div><div class="body">"market signal"의 한글 — "밖에서 들어온 신호" / "기회 신호" / "시장 신호"? <small>1순위 선택.</small></div></div>
+          <div class="q"><div class="n">05</div><div class="body">Roadmap 탭은 지금 비활성 노출 vs 숨김? <small>가시화 = 약속, 숨김 = 기대 미창출. 트레이드오프.</small></div></div>
+          <div class="q"><div class="n">06</div><div class="body">Chat을 3탭 중앙에 두는가? <small>일상 진입의 첫 자리.</small></div></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot wrap">
+      <div><strong>Lompass</strong> · Brand Book Draft v0.4 · 2026.06.19</div>
+      <div>Source of truth · <code>lib/brand.ts</code></div>
+    </footer>
+  </body>
+</html>

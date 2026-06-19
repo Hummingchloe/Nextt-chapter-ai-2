@@ -1,40 +1,40 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
-@import url("https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap");
 @import "tailwindcss";
 
 @theme {
-  /* ── Warm, lightly-premium palette ─────────────────────── */
-  --color-cream: #fbf7f1;
-  --color-cream-2: #f6efe5;
-  --color-sand: #f1e8da;
+  /* ── Lompass palette · mono base + single blue accent ─── */
+  --color-cream: #f7f9fb;
+  --color-cream-2: #f2f4f6;
+  --color-sand: #ebeef0;
   --color-surface: #ffffff;
 
-  --color-ink: #2c2722;
-  --color-ink-soft: #6f655a;
-  --color-ink-faint: #9c9084;
+  --color-ink: #191f28;
+  --color-ink-soft: #4e5968;
+  --color-ink-faint: #8b95a1;
 
-  --color-clay: #bd7a5b;
-  --color-clay-deep: #a05c3f;
-  --color-clay-tint: #f5e6dc;
+  --color-clay: #3182f6;
+  --color-clay-deep: #1b64da;
+  --color-clay-tint: #e8f3ff;
 
-  --color-sage: #8a9a80;
-  --color-sage-tint: #e9efe4;
+  --color-sage: #2cb67d;
+  --color-sage-tint: #e9f7f0;
 
-  --color-gold: #c6a567;
-  --color-line: #e9dfd1;
+  --color-gold: #f5a623;
+  --color-line: #e5e8eb;
 
-  /* ── Typography ────────────────────────────────────────── */
+  /* ── Typography · single family Pretendard ─────────────── */
   --font-sans: "Pretendard", "Pretendard Variable", -apple-system,
     BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic",
     sans-serif;
-  --font-display: "Gowun Batang", "Nanum Myeongjo", serif;
+  --font-display: "Pretendard", "Pretendard Variable", -apple-system,
+    BlinkMacSystemFont, system-ui, sans-serif;
 
   /* ── Radius & shadow ───────────────────────────────────── */
-  --radius-xl2: 1.75rem;
-  --shadow-soft: 0 1px 2px rgba(70, 50, 35, 0.04),
-    0 12px 32px -12px rgba(99, 70, 45, 0.18);
-  --shadow-lift: 0 2px 4px rgba(70, 50, 35, 0.05),
-    0 24px 48px -16px rgba(99, 70, 45, 0.22);
+  --radius-xl2: 1.5rem;
+  --shadow-soft: 0 1px 2px rgba(25, 31, 40, 0.04),
+    0 12px 28px -16px rgba(25, 31, 40, 0.12);
+  --shadow-lift: 0 2px 4px rgba(25, 31, 40, 0.05),
+    0 24px 48px -20px rgba(25, 31, 40, 0.18);
 }
 
 @layer base {
@@ -47,18 +47,17 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.018em;
     word-break: keep-all;
   }
   ::selection {
     background: var(--color-clay-tint);
     color: var(--color-clay-deep);
   }
-  /* Subtle, refined focus ring */
   :focus-visible {
     outline: 2px solid var(--color-clay);
     outline-offset: 2px;
-    border-radius: 6px;
+    border-radius: 8px;
   }
 }
 
@@ -66,7 +65,7 @@
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -79,22 +78,22 @@
 }
 @keyframes float-soft {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
+  50% { transform: translateY(-5px); }
 }
 @keyframes shimmer {
   0% { background-position: -480px 0; }
   100% { background-position: 480px 0; }
 }
 @keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.06); opacity: 1; }
+  0%, 100% { transform: scale(1); opacity: 0.92; }
+  50% { transform: scale(1.04); opacity: 1; }
 }
 
 .animate-fade-up {
-  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .animate-fade-in {
-  animation: fade-in 0.8s ease both;
+  animation: fade-in 0.7s ease both;
 }
 .animate-float {
   animation: float-soft 6s ease-in-out infinite;
@@ -103,12 +102,11 @@
   animation: breathe 3.4s ease-in-out infinite;
 }
 
-/* Stagger helpers */
-.delay-1 { animation-delay: 0.08s; }
-.delay-2 { animation-delay: 0.16s; }
-.delay-3 { animation-delay: 0.24s; }
-.delay-4 { animation-delay: 0.32s; }
-.delay-5 { animation-delay: 0.40s; }
+.delay-1 { animation-delay: 0.06s; }
+.delay-2 { animation-delay: 0.12s; }
+.delay-3 { animation-delay: 0.18s; }
+.delay-4 { animation-delay: 0.24s; }
+.delay-5 { animation-delay: 0.30s; }
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -123,13 +121,13 @@
 
 .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.015em;
+  font-weight: 800;
+  letter-spacing: -0.035em;
 }
 
-/* Warm grain/gradient backdrop used on hero & result */
+/* Subtle blue-tinted radial backdrop · landing hero */
 .bg-warm-glow {
   background:
-    radial-gradient(60% 50% at 18% 8%, rgba(198, 165, 103, 0.16), transparent 70%),
-    radial-gradient(55% 45% at 92% 14%, rgba(189, 122, 91, 0.14), transparent 70%),
-    radial-gradient(70% 60% at 50% 110%, rgba(138, 154, 128, 0.14), transparent 70%);
+    radial-gradient(60% 50% at 18% 8%, rgba(49, 130, 246, 0.06), transparent 70%),
+    radial-gradient(55% 45% at 92% 14%, rgba(49, 130, 246, 0.05), transparent 70%);
 }
