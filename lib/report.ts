@@ -70,11 +70,11 @@ function buildStrengths(
 
   if (often)
     out.push(
-      `사람들이 당신에게 “${firstClause(often)}”을(를) 자주 부탁한다는 건, 이미 그 분야에서 신뢰를 얻고 있다는 뜻이에요.`,
+      `사람들이 자주 부탁하는 내용이 “${firstClause(often)}”이라는 건, 이미 그 분야에서 신뢰를 얻고 있다는 뜻이에요.`,
     );
   if (goodAt)
     out.push(
-      `돈을 받지 않고도 “${firstClause(goodAt)}”을(를) 잘 해낸다는 건, 애써 만들지 않아도 자연스럽게 나오는 진짜 강점이에요.`,
+      `돈을 받지 않고도 잘 해내는 일이 “${firstClause(goodAt)}”이라는 건, 애써 만들지 않아도 자연스럽게 나오는 진짜 강점이에요.`,
     );
   if (energy)
     out.push(

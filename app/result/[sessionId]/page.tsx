@@ -171,32 +171,56 @@ export default async function ResultPage({
           </ReportSection>
 
           <ReportSection index="02" title="지금 가장 맞는 방향">
-            <div className="rounded-3xl bg-ink px-6 py-7 text-white sm:px-7">
-              <p className="text-xs font-semibold tracking-[0.12em] text-white/60">
-                1순위 · 가장 현실적인 첫 시작
-              </p>
-              <h2 className="mt-2 text-[1.45rem] font-extrabold tracking-[-0.035em]">
-                {r.topRecommendation.label}
-              </h2>
-              {topDirection?.why && (
-                <p className="mt-2 text-sm leading-6 text-white/70">{topDirection.why}</p>
-              )}
-              <ul className="mt-5 space-y-3">
-                {r.topRecommendation.reasons.map((reason) => (
-                  <li key={reason} className="flex items-start gap-3 text-sm leading-6 text-white/90">
-                    <span
-                      aria-hidden="true"
-                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-clay"
-                    />
-                    {reason}
-                  </li>
-                ))}
-              </ul>
+            <div
+              className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-clay sm:-mx-6 sm:px-6"
+              role="region"
+              aria-label="추천 방향 1순위부터 3순위"
+              tabIndex={0}
+            >
+              <article className="min-w-[88%] snap-center rounded-3xl bg-ink px-6 py-7 text-white sm:min-w-full sm:px-7">
+                <p className="text-xs font-semibold tracking-[0.12em] text-white/60">
+                  1순위 · 가장 현실적인 첫 시작
+                </p>
+                <h2 className="mt-2 text-[1.45rem] font-extrabold tracking-[-0.035em]">
+                  {r.topRecommendation.label}
+                </h2>
+                {topDirection?.why && (
+                  <p className="mt-2 text-sm leading-6 text-white/70">{topDirection.why}</p>
+                )}
+                <ul className="mt-5 space-y-3">
+                  {r.topRecommendation.reasons.map((reason) => (
+                    <li key={reason} className="flex items-start gap-3 text-sm leading-6 text-white/90">
+                      <span
+                        aria-hidden="true"
+                        className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-clay"
+                      />
+                      {reason}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              {otherDirections.map((direction, index) => (
+                <article
+                  key={direction.label}
+                  className="min-w-[88%] snap-center rounded-3xl border border-line bg-surface px-6 py-7 sm:min-w-full sm:px-7"
+                >
+                  <p className="text-xs font-semibold tracking-[0.12em] text-clay">
+                    {index + 2}순위 · 함께 볼 수 있는 방향
+                  </p>
+                  <h2 className="mt-2 text-[1.45rem] font-extrabold tracking-[-0.035em] text-ink">
+                    {direction.label}
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-ink-soft">{direction.why}</p>
+                  <p className="mt-6 rounded-2xl bg-cream px-4 py-3 text-xs leading-5 text-ink-soft">
+                    지금은 1순위에 집중하되, 상황이 달라지면 다시 검토할 수 있어요.
+                  </p>
+                </article>
+              ))}
             </div>
             {otherDirections.length > 0 && (
-              <p className="mt-3 text-center text-xs leading-5 text-ink-faint">
-                맞는 방향이 {otherDirections.length}개 더 있어요. 지금은 이 하나에
-                집중해도 충분해요.
+              <p className="mt-1 text-center text-xs leading-5 text-ink-faint">
+                옆으로 넘기면 {otherDirections.length}개의 다른 방향도 볼 수 있어요.
               </p>
             )}
           </ReportSection>
