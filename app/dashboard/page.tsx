@@ -63,13 +63,11 @@ export default function DashboardPage() {
   function complete(action: CompassAction) {
     if (!compass) return;
     const now = new Date().toISOString();
-    const before = compass.displayAlignment;
     const next = completeAction(compass, action, now, Date.now().toString(36), actionNotes[action.id]);
     setCompass(next);
     void saveCompassState(next);
     setActionNotes((prev) => ({ ...prev, [action.id]: "" }));
-    const delta = Math.round((next.displayAlignment - before) * 100);
-    setJustMoved(`‘${action.title}’ 완료 · 정렬도 ${delta >= 0 ? "+" : ""}${delta}%`);
+    setJustMoved(`‘${action.title}’ 완료했어요. 방향이 조금 더 선명해졌어요.`);
   }
 
   function feed() {
@@ -97,7 +95,7 @@ export default function DashboardPage() {
             className="rounded-full border border-gold bg-cream-2 px-3 py-2 text-xs font-semibold text-clay-deep transition hover:bg-sand"
             title="전직 AI 엔지니어 · AI 교육 창업 샘플 기록 불러오기"
           >
-            🧪 테스트 먹이기
+            샘플 보기
           </button>
           <Link className="rounded-full border border-line bg-surface px-4 py-2 text-ink-soft" href="/chat">
             채팅
@@ -168,12 +166,10 @@ export default function DashboardPage() {
                     <div key={a.id} className="flex flex-col rounded-2xl border border-line bg-cream p-4">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-clay">
-                          {a.kind === "probe" ? "검증 실험" : "방향 강화"}
+                          {a.kind === "probe" ? "작게 확인하기" : "한 걸음 실행"}
                         </span>
                         <span className="text-xs font-medium text-sage">
-                          {a.kind === "probe"
-                            ? "방향 확인"
-                            : `예상 정렬도 ${a.expectedDelta >= 0 ? "+" : ""}${Math.round(a.expectedDelta * 100)}%`}
+                          {a.kind === "probe" ? "반응 보기" : "추천 행동"}
                         </span>
                       </div>
                       <p className="mt-2 font-semibold leading-snug text-ink">{a.title}</p>
@@ -212,7 +208,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <Gate message="기록이 더 쌓이면 검증·강화 액션이 열립니다." />
+                <Gate message="기록이 더 쌓이면 오늘 해볼 작은 행동을 제안할게요." />
               )}
               {compass && compass.doneActions.length > 0 && (
                 <div className="mt-4 border-t border-line pt-4">
@@ -262,7 +258,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <Gate message="방향이 충분히 또렷해지면 추천 콘텐츠가 열립니다." />
+                <Gate message="기록이 조금 더 쌓이면 지금 방향에 맞는 콘텐츠를 보여드릴게요." />
               )}
             </Section>
 
@@ -308,9 +304,9 @@ function Gate({ message }: { message: string }) {
 
 function MetricGrid({ compass }: { compass: CompassState | null }) {
   const items = [
-    ["확신도", compass ? Math.round(compass.compass.confidence * 100) : 0],
-    ["방향 강도", compass ? Math.round(compass.compass.magnitude * 100) : 0],
-    ["기록", compass ? compass.beads.length : 0],
+    ["방향 선명도", compass ? Math.round(compass.compass.confidence * 100) : 0],
+    ["방향 힘", compass ? Math.round(compass.compass.magnitude * 100) : 0],
+    ["쌓인 기록", compass ? compass.beads.length : 0],
   ] as const;
   return (
     <div className="grid grid-cols-3 gap-2">

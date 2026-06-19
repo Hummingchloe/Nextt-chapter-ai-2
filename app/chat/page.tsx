@@ -13,9 +13,9 @@ import type { CompassState } from "@/lib/compass-engine";
 import { seedCompass } from "@/lib/compass-seed";
 
 const STARTERS = [
-  "요즘 가장 자주 드는 생각은...",
-  "내가 잘하지만 아직 돈으로 연결 못 한 것은...",
-  "오늘 한 작은 행동은...",
+  "오늘 한 일은...",
+  "누가 내게 물어본 문제는...",
+  "내일 작게 해볼 일은...",
 ];
 
 interface Bubble {
@@ -97,7 +97,7 @@ export default function ChatPage() {
       await saveCompassState(next);
       void enrichEssence(next);
     } catch {
-      setError("계산 중 문제가 있었어요. 잠시 후 다시 시도해 주세요.");
+      setError("기록 중 문제가 있었어요. 잠시 후 다시 시도해 주세요.");
     } finally {
       setLoading(false);
     }
@@ -188,7 +188,7 @@ export default function ChatPage() {
             className="rounded-full border border-gold bg-cream-2 px-3 py-2 text-xs font-semibold text-clay-deep transition hover:bg-sand"
             title="전직 AI 엔지니어 · AI 교육 창업 샘플 기록 불러오기"
           >
-            🧪 테스트 먹이기
+            샘플 보기
           </button>
           <Link className="rounded-full bg-clay px-4 py-2 font-semibold text-white" href="/chat">
             채팅
@@ -275,7 +275,7 @@ export default function ChatPage() {
                 disabled={!input.trim() || loading || !compass}
                 className="w-20 rounded-2xl bg-clay px-4 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-clay-deep disabled:opacity-50"
               >
-                {loading ? "계산" : "보내기"}
+                {loading ? "기록 중" : "보내기"}
               </button>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function ChatPage() {
           <div className="rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm">
             <p className="text-sm font-semibold text-ink">로컬 우선 저장</p>
             <p className="mt-2 text-xs leading-relaxed text-ink-soft">
-              기록과 나침반은 이 브라우저(IndexedDB)에 저장됩니다. 서버는 계산 결과만 돌려줘요.
+              기록과 나침반은 이 브라우저(IndexedDB)에 저장됩니다. 서버는 필요한 결과만 돌려줘요.
             </p>
           </div>
           <Link
@@ -350,7 +350,7 @@ function CompassCard({ compass }: { compass: CompassState | null }) {
         <span className="text-sm font-semibold text-clay">{pct}%</span>
       </div>
       <p className="mt-1.5 text-xs text-ink-faint">
-        정렬도 — {compass ? CONVERGE[compass.status] : "계산 전"}
+        정렬도 — {compass ? CONVERGE[compass.status] : "기록 전"}
       </p>
     </div>
   );
