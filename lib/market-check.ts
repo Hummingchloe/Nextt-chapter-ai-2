@@ -12,7 +12,7 @@ export type MarketCheckVerdict = "ready_to_test" | "needs_narrowing" | "needs_ev
 
 export interface MarketSourceSignal {
   label: string;
-  kind: "mock" | "public_search";
+  kind: "mock" | "public_search" | "web_evidence";
   url?: string;
   why: string;
 }
@@ -20,6 +20,7 @@ export interface MarketSourceSignal {
 export interface MarketCheck {
   verdict: MarketCheckVerdict;
   score: number; // 0..100, confidence to test the offer, not success probability
+  researchStatus?: "supported" | "insufficient" | "unavailable";
   demandSignals: string[];
   riskSignals: string[];
   coaching: string;

@@ -58,6 +58,7 @@ export interface ReportSection {
   marketCheck?: {
     verdict: "ready_to_test" | "needs_narrowing" | "needs_evidence";
     score: number;
+    researchStatus?: "supported" | "insufficient" | "unavailable";
     demandSignals: string[];
     riskSignals: string[];
     coaching: string;
@@ -65,7 +66,7 @@ export interface ReportSection {
     firstExperiment: string;
     sources: {
       label: string;
-      kind: "mock" | "public_search";
+      kind: "mock" | "public_search" | "web_evidence";
       url?: string;
       why: string;
     }[];

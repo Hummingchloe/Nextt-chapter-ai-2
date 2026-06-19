@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { runRecommendation } from "@/lib/engine";
 import { buildReport } from "@/lib/report";
 import { warmUpReport } from "@/lib/ai";
+import { researchMarket } from "@/lib/market-research";
 import { getSession, logEvent, updateSession, saveAnswer } from "@/lib/store";
 import type { QuestionResponseMap } from "@/lib/types";
 
@@ -35,9 +36,16 @@ export async function POST(req: Request) {
   // 1) Rule-based recommendation (deterministic, source of truth)
   const recommendation = runRecommendation(answers);
 
-  // 2) Deterministic Korean report, then optional AI warm-up
+  // 2) Deterministic report, optional two-search market research, then warm-up.
+  // Every external step fails closed: the report still completes and weak
+  // market evidence is explicitly marked as insufficient.
   const baseReport = buildReport(answers, recommendation);
-  const report = await warmUpReport(baseReport, answers);
+  const researchedReport = await researchMarket(
+    baseReport,
+    answers,
+    recommendation,
+  );
+  const report = await warmUpReport(researchedReport, answers);
 
   const startedMs = new Date(session.startedAt).getTime();
   const completionTimeSeconds = Math.max(

@@ -186,9 +186,33 @@ export default async function ResultPage({
                 </p>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <SignalList title="확인된 수요 신호" items={r.marketCheck.demandSignals} />
+                  <SignalList title="웹에서 확인된 시장 단서" items={r.marketCheck.demandSignals} />
                   <SignalList title="더 확인할 것" items={r.marketCheck.riskSignals} />
                 </div>
+
+                {r.marketCheck.sources.some((source) => source.url) && (
+                  <div className="mt-5 rounded-2xl border border-line bg-surface p-5">
+                    <p className="text-xs font-semibold text-ink-soft">
+                      확인한 공개 출처
+                    </p>
+                    <ul className="mt-3 space-y-2">
+                      {r.marketCheck.sources
+                        .filter((source) => source.url)
+                        .map((source) => (
+                          <li key={source.url}>
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sm font-semibold leading-6 text-clay-deep underline decoration-clay/30 underline-offset-4"
+                            >
+                              {source.label}
+                            </a>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
 
                 <div className="mt-5 rounded-2xl bg-cream-2 p-5">
                   <p className="text-xs font-semibold text-clay-deep">먼저 물어볼 질문</p>
