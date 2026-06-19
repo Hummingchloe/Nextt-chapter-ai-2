@@ -50,7 +50,7 @@ function targetFromDirection(directionId: string): string {
     digital_guide: "검색으로 답을 찾다가 막히는 사람",
     ai_beginner_help: "AI를 써보고 싶지만 자기 일에 못 붙인 사람",
     community_program: "혼자 해결하기 어려워 함께 움직일 사람이 필요한 사람",
-    local_life_guide: "새 지역에 막 정착해 절차와 선택지가 막막한 사람",
+    local_life_guide: "이직·이주·새 분야 같은 전환을 시작해 선택지가 막막한 사람",
     experience_support: "같은 시간을 지나며 안심과 방향이 필요한 사람",
   };
   return map[directionId] ?? "지금 이 도움을 필요로 하는 사람";
@@ -67,7 +67,7 @@ function buildDemandSignals(a: QuestionResponseMap, rec: RecommendationOutput): 
     out.push(`이미 주변에서 “${clip(a.often_asked)}”을(를) 묻고 있어요.`);
   }
   if (clean(a.us_experience)) {
-    out.push(`미국 생활/커뮤니티 맥락 안에서 “${clip(a.us_experience)}”라는 접점이 있어요.`);
+    out.push(`지금 또는 최근 맡아온 역할에서 “${clip(a.us_experience)}”라는 접점이 있어요.`);
   }
   if (rec.topDirection.breakdown.customerAccess >= 2) {
     out.push("첫 고객 후보에게 닿는 경로가 비교적 가까워요.");
