@@ -1,21 +1,20 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AppTabBar from "./components/AppTabBar";
+import { BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "My Life Compass — AI 시대에 내 경험을 새 수익으로",
-  description:
-    "AI 시대에 내 경험과 기술을 새로운 수익 기회로 바꾸는 Life Compass OS.",
+  title: BRAND.meta.title,
+  description: BRAND.meta.description,
   openGraph: {
-    title: "My Life Compass",
-    description:
-      "채팅과 리포트를 통해 내 경험을 새 수익 기회로 바꾸는 방향을 찾아요.",
+    title: BRAND.meta.ogTitle,
+    description: BRAND.meta.ogDescription,
     type: "website",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fbf7f1",
+  themeColor: "#f7f9fb",
   width: "device-width",
   initialScale: 1,
 };

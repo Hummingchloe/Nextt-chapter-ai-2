@@ -11,6 +11,7 @@ import {
 } from "@/lib/local-ontology-store";
 import type { CompassState } from "@/lib/compass-engine";
 import { seedCompass } from "@/lib/compass-seed";
+import { BRAND } from "@/lib/brand";
 
 const STARTERS = [
   "오늘 한 일은...",
@@ -185,7 +186,7 @@ export default function ChatPage() {
         <nav className="flex items-center gap-2 text-sm">
           <button
             onClick={feed}
-            className="rounded-full border border-gold bg-cream-2 px-3 py-2 text-xs font-semibold text-clay-deep transition hover:bg-sand"
+            className="rounded-full border border-line bg-cream-2 px-3 py-2 text-xs font-bold text-clay-deep transition hover:bg-sand"
             title="전직 AI 엔지니어 · AI 교육 창업 샘플 기록 불러오기"
           >
             샘플 보기
@@ -206,7 +207,7 @@ export default function ChatPage() {
               <div className="flex items-center gap-3">
                 <LogoMark className="h-9 w-9" />
                 <div>
-                  <h1 className="font-display text-xl font-bold text-ink">Compass Chat</h1>
+                  <h1 className="font-display text-xl font-bold text-ink">{BRAND.chatLabel}</h1>
                   <p className="text-sm text-ink-soft">오늘의 기록을 남기면 나침반이 갱신됩니다.</p>
                 </div>
               </div>
@@ -350,7 +351,7 @@ function CompassCard({ compass }: { compass: CompassState | null }) {
         <span className="text-sm font-semibold text-clay">{pct}%</span>
       </div>
       <p className="mt-1.5 text-xs text-ink-faint">
-        방향 선명도 — {compass ? CONVERGE[compass.status] : "기록 전"}
+        방향 — {compass ? CONVERGE[compass.status] : "기록 전"}
       </p>
     </div>
   );
