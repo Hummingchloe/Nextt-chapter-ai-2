@@ -1,55 +1,30 @@
-import Link from "next/link";
 import TrackView from "./components/TrackView";
-import { LogoMark, Wordmark } from "./components/Logo";
+import { Wordmark } from "./components/Logo";
 import OnboardingStartButton from "./components/OnboardingStartButton";
 import InteractiveCompassHero from "./components/InteractiveCompassHero";
-import { BRAND } from "@/lib/brand";
 
 const painPoints = [
-  "내가 다음에 할 수 있는 일이 뭔지 모르겠다.",
-  "경험은 쌓였는데 어떻게 정리해야 할지 막막하다.",
-  "지금 작게 시작할 수 있는 한 가지를 찾고 싶다.",
-  "AI는 배웠는데, 내 일과 어떻게 연결해야 할지 모르겠다.",
-];
-
-const userTypes = [
-  {
-    tag: "다음 방향을 찾는 사람",
-    desc: "지금까지 해온 일은 있는데, 다음 걸음을 어디로 둘지 막막한 분.",
-    tint: "bg-clay-tint",
-  },
-  {
-    tag: "자산이 흩어진 전문가",
-    desc: "경험·강점은 분명한데 어떻게 모아 팔지 막힌 분.",
-    tint: "bg-sage-tint",
-  },
-  {
-    tag: "AI를 연결하려는 사람",
-    desc: "AI를 알지만 내 일과 수익으로 어떻게 잇는지 모르는 분.",
-    tint: "bg-clay-tint",
-  },
-  {
-    tag: "사람을 잇는 커넥터",
-    desc: "모임·소개·관계 자산이 큰, 연결에 강점이 있는 분.",
-    tint: "bg-sage-tint",
-  },
+  "해온 일은 있는데, 다음에 뭘 해야 할지 모르겠다.",
+  "경험과 강점은 많은데 하나로 정리되지 않는다.",
+  "AI를 배웠지만, 내 일과 어떻게 연결할지 막막하다.",
+  "거창한 계획보다 지금 시작할 한 가지가 필요하다.",
 ];
 
 const steps = [
   {
     n: "01",
-    t: "대화에 기록해요",
-    d: "긴 질문지가 없어요. 지금 생각이나 오늘 있었던 일을 짧게 적으세요.",
+    t: "짧게 답합니다",
+    d: "지금까지의 경험과 현재 고민을 질문에 따라 정리합니다.",
   },
   {
     n: "02",
-    t: "컴퍼스가 신호를 모아요",
-    d: "기록은 이 브라우저에 쌓이고, 서버는 필요한 계산만 합니다.",
+    t: "첫 방향을 확인합니다",
+    d: "강점, 추천 방향, 시장 단서와 다음 행동을 리포트로 봅니다.",
   },
   {
     n: "03",
-    t: "방향이 또렷해져요",
-    d: "방향이 또렷해진 만큼 오늘 해볼 일과 추천 콘텐츠가 열립니다.",
+    t: "기록하며 좁혀갑니다",
+    d: "이후의 기록과 행동이 쌓일수록 Compass가 갱신됩니다.",
   },
 ];
 
@@ -119,88 +94,53 @@ export default function LandingPage() {
           <p className="mt-10 text-[1.05rem] font-medium leading-relaxed text-ink-soft">
             가능성이 없는 게 아닙니다.
             <br />
-            <b className="text-ink">아직 '일의 언어'로 번역되지 않았을 뿐</b>
+            <b className="text-ink">아직 ‘일의 언어’로 정리되지 않았을 뿐</b>
             입니다.
           </p>
         </div>
       </section>
 
-      {/* ── What you get ────────────────────────────────── */}
+      {/* ── What Lompass does ───────────────────────────── */}
       <section className="py-24">
         <div className="mx-auto max-w-4xl px-6">
           <div className="text-center">
             <p className="text-[12px] font-bold uppercase tracking-wider text-clay">
-              대화 뒤, 대시보드에 쌓이는 것
+              Lompass가 정리하는 것
             </p>
             <h2 className="mt-3 text-[1.6rem] font-extrabold tracking-[-0.035em] text-ink sm:text-[2rem]">
-              막연함 대신, 살아있는 상태판
+              내 경험에서, 다음 한 걸음을 찾습니다.
             </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-[1rem] font-medium leading-7 text-ink-soft">
+              온보딩 답변과 이후의 기록에서 반복되는 경험·강점·행동 신호를 모아,
+              <br className="hidden sm:block" /> 지금의 방향과 작은 실행으로 정리합니다.
+            </p>
           </div>
 
-          <div className="mt-12 grid gap-4 md:grid-cols-2">
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
             <ResultCard
-              title="나의 강점 요약"
-              body="대화 기록에서 반복되는 경험과 자산 신호를 모아 보여줍니다."
+              title="나의 강점"
+              body="반복해서 드러나는 경험과 강점을 정리합니다."
               accent="clay"
             />
             <ResultCard
               title="지금의 방향"
-              body="기록이 충분한지 보고, 추천보다 질문이 먼저인지 판단합니다."
+              body="여러 신호가 어느 쪽으로 모이는지 보여줍니다."
               accent="sage"
             />
             <ResultCard
               title="오늘 해볼 일"
-              body="방향이 또렷해진 만큼 오늘·내일·3일차 행동을 제안합니다."
+              body="지금 바로 할 수 있는 작은 행동을 제안합니다."
               accent="clay"
             />
-            <ResultCard
-              title="추천 콘텐츠와 기록 로그"
-              body="추천 콘텐츠와 내가 남긴 기록의 흐름을 같이 봅니다."
-              accent="sage"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Who it's for ────────────────────────────────── */}
-      <section className="bg-cream-2 py-24">
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="text-center">
-            <h2 className="text-[1.6rem] font-extrabold tracking-[-0.035em] text-ink sm:text-[2rem]">
-              누구를 위한 서비스인가요
-            </h2>
-            <p className="mt-3 text-[1rem] font-medium text-ink-soft">
-              다음 방향이 막막한 사람이, 자신의 경험에서 한 가지 길을 또렷하게 만드는 시간.
-            </p>
-          </div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2">
-            {userTypes.map((u) => (
-              <div
-                key={u.tag}
-                className="flex items-start gap-4 rounded-2xl border border-line bg-surface p-6 transition hover:shadow-soft"
-              >
-                <span
-                  className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${u.tint}`}
-                >
-                  <LogoMark className="h-5 w-5" />
-                </span>
-                <div>
-                  <p className="font-extrabold tracking-[-0.02em] text-ink">{u.tag}</p>
-                  <p className="mt-1 text-[0.95rem] font-medium leading-relaxed text-ink-soft">
-                    {u.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* ── How it works ────────────────────────────────── */}
-      <section className="py-24">
+      <section className="bg-cream-2 py-24">
         <div className="mx-auto max-w-4xl px-6">
           <h2 className="text-center text-[1.6rem] font-extrabold tracking-[-0.035em] text-ink sm:text-[2rem]">
-            어떻게 진행되나요
+            어떻게 진행되나요?
           </h2>
           <div className="mt-14 grid gap-10 sm:grid-cols-3">
             {steps.map((s) => (
@@ -220,74 +160,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── After the dashboard: momentum ──────────────────── */}
-      <section className="bg-cream-2 py-24">
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="grid items-center gap-10 md:grid-cols-2">
-            <div>
-              <p className="text-[12px] font-bold uppercase tracking-wider text-clay">
-                방향을 찾은 다음에도
-              </p>
-              <h2 className="mt-3 text-[1.6rem] font-extrabold tracking-[-0.035em] leading-snug text-ink sm:text-[2rem]">
-                혼자 두지 않습니다.
-                <br />
-                대화 한 줄이면 충분합니다.
-              </h2>
-              <p className="mt-5 text-[1rem] font-medium leading-relaxed text-ink-soft">
-                대화에 오늘의 작은 행동을 짧게 기록하면 컴퍼스가 흐름을 읽고
-                대시보드에 다음 걸음을 보여줍니다.
-                크게 하지 않아도 괜찮습니다.{" "}
-                <b className="text-ink">멈추지만 않으면 됩니다.</b>
-              </p>
-              <ul className="mt-6 space-y-2.5 text-ink">
-                {[
-                  "오늘의 가장 작은 행동 1개",
-                  "2~3분이면 끝나는 짧은 기록",
-                  "현재 방향이 자동 갱신",
-                  "대시보드 추천 상태 확인",
-                ].map((t) => (
-                  <li key={t} className="flex items-center gap-2.5 text-[0.97rem] font-medium">
-                    <span className="text-clay">✓</span>
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-line bg-surface p-6 shadow-soft">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-clay">
-                {BRAND.chatLabel}
-              </p>
-              <div className="mt-3 rounded-2xl bg-cream-2 p-4">
-                <p className="text-sm font-medium text-ink-soft">오늘 해볼 일</p>
-                <p className="mt-1 text-[0.97rem] font-bold tracking-[-0.02em] text-ink">
-                  가장 편한 동료 한 사람에게 "요즘 그 매뉴얼 잘 보고 있어요?"라고 물어보기.
-                </p>
-              </div>
-              <div className="mt-3 rounded-2xl bg-sage-tint p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-sage">
-                  오늘의 한 줄 피드백
-                </p>
-                <p className="mt-1.5 text-sm font-medium leading-relaxed text-ink">
-                  오늘은 막막함을 안고도 한 걸음 나갔습니다. 더 많이 하기보다,
-                  같은 질문을 한 사람에게 한 번 더 해보는 게 좋아 보입니다.
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* ── Habit + privacy ─────────────────────────────── */}
+      <section className="py-24">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <p className="text-[12px] font-bold uppercase tracking-wider text-clay">
+            첫 리포트 이후
+          </p>
+          <h2 className="mt-3 text-[1.6rem] font-extrabold tracking-[-0.035em] text-ink sm:text-[2rem]">
+            이후에는, 하루 한 줄이면 충분합니다.
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-[1rem] font-medium leading-7 text-ink-soft">
+            오늘 한 행동, 머릿속에 남은 생각, 누군가와 나눈 대화를 짧게 남겨보세요.
+            <br className="hidden sm:block" /> Lompass가 기록을 다시 읽고 다음 질문과
+            작은 행동을 제안합니다.
+          </p>
+          <p className="mx-auto mt-7 inline-flex rounded-full bg-clay-tint px-4 py-2 text-sm font-semibold text-clay-deep">
+            가입 없이 시작 · 일상의 Compass 기록은 내 브라우저에 우선 저장
+          </p>
         </div>
       </section>
 
       {/* ── Final CTA ───────────────────────────────────── */}
       <section className="px-6 pb-24">
         <div className="bg-warm-glow mx-auto max-w-3xl rounded-[2rem] border border-line bg-surface px-8 py-16 text-center shadow-soft">
-          <LogoMark className="mx-auto h-12 w-12 animate-breathe" />
-          <h2 className="mt-6 text-[1.6rem] font-extrabold tracking-[-0.035em] leading-snug text-ink sm:text-[2rem]">
-            "이제 나도, 이 방향으로
-            <br />
-            한번 작게 시작해볼 수 있겠다."
+          <h2 className="text-[1.6rem] font-extrabold tracking-[-0.035em] leading-snug text-ink sm:text-[2rem]">
+            오늘의 기록이
+            <br /> 다음 방향의 시작이 됩니다.
           </h2>
           <p className="mt-4 text-[1rem] font-medium text-ink-soft">
-            기록할수록 방향이 또렷해집니다. 당신의 차례입니다.
+            거창한 계획보다, 지금의 경험부터 짧게 정리해보세요.
           </p>
           <OnboardingStartButton
             className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-clay px-8 py-4 text-[1.05rem] font-bold text-white transition hover:bg-clay-deep active:scale-[0.98] disabled:opacity-60"
@@ -301,12 +202,7 @@ export default function LandingPage() {
       <footer className="border-t border-line bg-cream-2">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm font-medium text-ink-faint sm:flex-row">
           <Wordmark />
-          <div className="text-center sm:text-right">
-            <p>다음 방향을 함께 묻는 일상의 컴퍼스.</p>
-            <p className="mt-1 text-xs">
-              🔒 적으신 이야기는 방향을 찾는 데만 쓰입니다. 외부로 팔지 않습니다.
-            </p>
-          </div>
+          <p>© Lompass</p>
         </div>
       </footer>
     </main>
