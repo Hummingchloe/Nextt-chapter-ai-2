@@ -224,7 +224,6 @@ function DiagnosticFlow() {
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-5 py-8 sm:py-12">
         {showMid ? (
           <MidSummary
-            name={name}
             answers={answers}
             onContinue={() => {
               setShowMid(false);
@@ -334,22 +333,12 @@ function DiagnosticFlow() {
 
 // ── Mid-flow reflection (Screen between questions) ───────────
 function MidSummary({
-  name,
   answers,
   onContinue,
 }: {
-  name: string;
   answers: Record<string, string>;
   onContinue: () => void;
 }) {
-  const styleLabel: Record<string, string> = {
-    one_on_one: "한 사람을 깊이 돕는",
-    small_group: "작은 그룹을 이끄는",
-    make_alone: "혼자 차분히 만들어내는",
-    teach: "쉽게 설명하고 가르치는",
-    connect: "사람과 사람을 잇는",
-  };
-  const style = styleLabel[answers.work_style] ?? "당신만의";
   const hint =
     (answers.often_asked || answers.good_at_unpaid || "").trim().slice(0, 28);
 
@@ -359,23 +348,23 @@ function MidSummary({
         <span className="text-2xl">🌤️</span>
       </div>
       <p className="text-sm font-semibold uppercase tracking-wider text-sage">
-        잠깐, 여기까지 비춰보면
+        잠깐, 지금까지의 답을 모아보면
       </p>
       <h2 className="mt-4 max-w-md font-display text-[1.5rem] font-bold leading-snug text-ink sm:text-[1.8rem]">
-        {name ? `${name}님은 ` : "당신은 "}
-        <span className="text-clay-deep">{style}</span> 사람이네요.
+        당신만의 방향이{" "}
+        <span className="text-clay-deep">조금씩 보이기 시작했어요.</span>
       </h2>
       <p className="mt-4 max-w-md leading-relaxed text-ink-soft">
         {hint
-          ? `“${hint}…” 같은 결도 보였어요. 이런 단서들이 모이면 방향이 또렷해져요. `
-          : "지금까지 답에서 작은 단서들이 보이기 시작했어요. "}
-        조금만 더 가볼까요?
+          ? `“${hint}…” 같은 단서들이 서로 이어지고 있어요. `
+          : "지금까지 답에서 발견한 단서들이 서로 이어지고 있어요. "}
+        조금만 더 살펴보면, 지금 가장 현실적인 방향을 찾을 수 있어요.
       </p>
       <button
         onClick={onContinue}
         className="mt-9 rounded-full bg-clay px-8 py-4 font-semibold text-white shadow-soft transition hover:bg-clay-deep active:scale-[0.99]"
       >
-        계속하기 →
+        내 방향 더 알아보기 →
       </button>
     </div>
   );
