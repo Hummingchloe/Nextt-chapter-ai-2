@@ -1,6 +1,7 @@
 import Link from "next/link";
 import TrackView from "./components/TrackView";
 import { LogoMark, Wordmark } from "./components/Logo";
+import OnboardingStartButton from "./components/OnboardingStartButton";
 import { BRAND } from "@/lib/brand";
 
 const painPoints = [
@@ -59,12 +60,11 @@ export default function LandingPage() {
       {/* ── Nav ─────────────────────────────────────────── */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Wordmark />
-        <Link
-          href="/chat"
-          className="hidden rounded-full bg-clay px-5 py-2.5 text-sm font-bold text-white transition hover:bg-clay-deep sm:inline-block"
+        <OnboardingStartButton
+          className="hidden rounded-full bg-clay px-5 py-2.5 text-sm font-bold text-white transition hover:bg-clay-deep disabled:opacity-60 sm:inline-block"
         >
-          대화 시작하기
-        </Link>
+          내 방향 찾아보기
+        </OnboardingStartButton>
       </header>
 
       {/* ── Hero ────────────────────────────────────────── */}
@@ -91,13 +91,12 @@ export default function LandingPage() {
           </p>
 
           <div className="animate-fade-up delay-3 mt-10 flex flex-col items-center gap-3">
-            <Link
-              href="/chat"
-              className="group inline-flex items-center gap-2 rounded-2xl bg-clay px-8 py-4 text-[1.05rem] font-bold text-white transition hover:bg-clay-deep active:scale-[0.98]"
+            <OnboardingStartButton
+              className="group inline-flex items-center gap-2 rounded-2xl bg-clay px-8 py-4 text-[1.05rem] font-bold text-white transition hover:bg-clay-deep active:scale-[0.98] disabled:opacity-60"
             >
-              대화로 시작하기
+              내 방향 찾아보기
               <span className="transition group-hover:translate-x-0.5">→</span>
-            </Link>
+            </OnboardingStartButton>
             <p className="text-sm font-medium text-ink-faint">
               가입 없이 · 로컬 우선 저장 · 대시보드 자동 갱신
             </p>
@@ -309,12 +308,11 @@ export default function LandingPage() {
           <p className="mt-4 text-[1rem] font-medium text-ink-soft">
             기록할수록 방향이 또렷해집니다. 당신의 차례입니다.
           </p>
-          <Link
-            href="/chat"
-            className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-clay px-8 py-4 text-[1.05rem] font-bold text-white transition hover:bg-clay-deep active:scale-[0.98]"
+          <OnboardingStartButton
+            className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-clay px-8 py-4 text-[1.05rem] font-bold text-white transition hover:bg-clay-deep active:scale-[0.98] disabled:opacity-60"
           >
-            대화로 시작하기 →
-          </Link>
+            내 방향 찾아보기 →
+          </OnboardingStartButton>
         </div>
       </section>
 

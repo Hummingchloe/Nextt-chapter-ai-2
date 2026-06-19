@@ -51,9 +51,9 @@ function DiagnosticFlow() {
   const total = QUESTIONS.length;
   const demo: Persona = PERSONAS.find((p) => p.id === demoId) ?? PERSONAS[0];
 
-  // Guard: no session → back to start.
+  // Guard: no session → back to the landing page.
   useEffect(() => {
-    if (!sid) router.replace("/start");
+    if (!sid) router.replace("/");
   }, [sid, router]);
 
   // Sync textarea when navigating to a text question.
