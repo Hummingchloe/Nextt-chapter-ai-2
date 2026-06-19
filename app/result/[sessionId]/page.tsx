@@ -9,7 +9,9 @@ import TrackView from "../../components/TrackView";
 import RememberSession from "../../components/RememberSession";
 import ExpertLensCard from "../../components/ExpertLensCard";
 import { buildExpertLens } from "@/lib/expert-lens";
+import { buildOnboardingCompassInput } from "@/lib/onboarding-compass-bridge";
 import ResultActions from "./ResultActions";
+import CompassOnboardingBridge from "./CompassOnboardingBridge";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +54,7 @@ export default async function ResultPage({
   const rec = session.recommendation;
   const name = session.name;
   const reportText = reportToText(r, name);
+  const compassInput = buildOnboardingCompassInput(r, rec);
   const lens = buildExpertLens(session, session.notes ?? []);
   const topDirection = r.directions.find(
     (direction) => direction.label === r.topRecommendation.label,
@@ -64,6 +67,7 @@ export default async function ResultPage({
   return (
     <main className="min-h-dvh overflow-x-hidden bg-cream pb-24">
       <TrackView event="result_viewed" meta={{ topDirection: rec.topDirection.label }} />
+      <CompassOnboardingBridge sessionId={sessionId} input={compassInput} />
       <RememberSession
         sessionId={sessionId}
         name={name}
