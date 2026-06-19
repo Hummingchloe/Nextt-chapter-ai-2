@@ -69,28 +69,23 @@ export default function LandingPage() {
 
       {/* ── Hero ────────────────────────────────────────── */}
       <section className="bg-warm-glow relative">
-        <div className="mx-auto max-w-3xl px-6 pb-24 pt-16 text-center sm:pt-24">
-          <p className="animate-fade-up mb-7 inline-flex items-center gap-2 rounded-full bg-clay-tint px-4 py-1.5 text-[13px] font-bold text-clay-deep">
-            <span className="h-1.5 w-1.5 rounded-full bg-clay" />
-            {BRAND.landingPill}
-          </p>
-
-          <h1 className="animate-fade-up delay-1 text-[2.4rem] font-extrabold leading-[1.08] tracking-[-0.04em] text-ink sm:text-[3.6rem]">
-            방향이
+        <div className="mx-auto max-w-3xl px-6 pb-20 pt-16 text-center sm:pb-24 sm:pt-24">
+          <h1 className="animate-fade-up text-[2.4rem] font-extrabold leading-[1.12] tracking-[-0.04em] text-ink sm:text-[3.6rem]">
+            흩어진 매일이
             <br />
-            <span className="text-clay">또렷해지는</span>
-            <br />
-            일상의 컴퍼스.
+            <span className="text-clay">한 방향으로 모이는 순간</span>
           </h1>
 
-          <p className="animate-fade-up delay-2 mx-auto mt-7 max-w-xl text-[1.08rem] font-medium leading-relaxed text-ink-soft">
-            매일의 대화를 쌓아가며 내 경험과 강점에서
-            <br className="hidden sm:block" />
-            지금 작게 시작할 수 있는{" "}
-            <b className="text-ink">단 하나의 방향</b>을 또렷하게 만드세요.
+          <p className="animate-fade-up delay-1 mx-auto mt-6 max-w-xl text-[1.05rem] font-medium leading-relaxed text-ink-soft">
+            기록이 쌓일수록, 나의 경험과 강점이
+            <br className="hidden sm:block" /> 하나의 방향으로 또렷해집니다.
           </p>
 
-          <div className="animate-fade-up delay-3 mt-10 flex flex-col items-center gap-3">
+          <div className="animate-fade-up delay-2 mx-auto mt-9 max-w-[320px]">
+            <LandingCompassPreview />
+          </div>
+
+          <div className="animate-fade-up delay-3 mt-9 flex flex-col items-center gap-3">
             <OnboardingStartButton
               className="group inline-flex items-center gap-2 rounded-2xl bg-clay px-8 py-4 text-[1.05rem] font-bold text-white transition hover:bg-clay-deep active:scale-[0.98] disabled:opacity-60"
             >
@@ -102,25 +97,10 @@ export default function LandingPage() {
             </p>
           </div>
         </div>
-
-        {/* Floating sample peek */}
-        <div className="pointer-events-none mx-auto -mb-16 max-w-md px-6">
-          <div className="animate-float rounded-3xl border border-line bg-surface p-5 shadow-lift">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-clay">
-              대시보드 미리보기
-            </p>
-            <p className="mt-2 text-lg font-extrabold tracking-[-0.025em] text-ink">
-              "오늘의 방향과 다음 한 걸음"
-            </p>
-            <p className="mt-1 text-sm font-medium text-ink-soft">
-              오늘 해볼 일 · 추천 콘텐츠 · 최근 기록이 한 화면에 정리됩니다.
-            </p>
-          </div>
-        </div>
       </section>
 
       {/* ── Pain points ─────────────────────────────────── */}
-      <section className="bg-cream-2 pt-32 pb-24">
+      <section className="bg-cream-2 py-24">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="text-[1.6rem] font-extrabold tracking-[-0.035em] text-ink sm:text-[2rem]">
             이런 생각, 해본 적 있나요?
@@ -329,6 +309,62 @@ export default function LandingPage() {
         </div>
       </footer>
     </main>
+  );
+}
+
+function LandingCompassPreview() {
+  const beads = [
+    { cx: 126, cy: 91, r: 8, fill: "var(--color-sage)" },
+    { cx: 151, cy: 77, r: 7, fill: "var(--color-clay)" },
+    { cx: 174, cy: 94, r: 6, fill: "var(--color-ink-faint)" },
+    { cx: 145, cy: 108, r: 5, fill: "var(--color-clay)" },
+    { cx: 166, cy: 114, r: 5, fill: "var(--color-sage)" },
+  ];
+
+  return (
+    <div
+      className="rounded-full border border-line bg-surface p-4 shadow-soft"
+      role="img"
+      aria-label="기록, 시장, 행동 신호가 한 방향으로 모이는 나침반 예시"
+    >
+      <svg viewBox="0 0 300 300" className="w-full" aria-hidden="true">
+        <circle cx="150" cy="150" r="132" fill="var(--color-cream-2)" />
+        <circle
+          cx="150"
+          cy="150"
+          r="112"
+          fill="var(--color-surface)"
+          stroke="var(--color-line)"
+          strokeWidth="2"
+        />
+        <circle
+          cx="150"
+          cy="150"
+          r="94"
+          fill="none"
+          stroke="var(--color-sand)"
+          strokeWidth="8"
+          strokeDasharray="420 180"
+          strokeLinecap="round"
+          transform="rotate(-80 150 150)"
+        />
+        <line
+          x1="150"
+          y1="238"
+          x2="150"
+          y2="65"
+          stroke="var(--color-clay)"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+        <path d="M150 47 L142 69 L158 69 Z" fill="var(--color-clay-deep)" />
+        <path d="M150 238 L136 151 L164 151 Z" fill="var(--color-ink-faint)" />
+        <circle cx="150" cy="151" r="10" fill="var(--color-surface)" stroke="var(--color-ink)" strokeWidth="4" />
+        {beads.map((bead, index) => (
+          <circle key={index} {...bead} opacity="0.86" stroke="var(--color-surface)" strokeWidth="2" />
+        ))}
+      </svg>
+    </div>
   );
 }
 
