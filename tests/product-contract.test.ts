@@ -131,6 +131,11 @@ test("report contract: copy must remain coaching-first and action-oriented", () 
   assert.match(text, /이번 주 첫 행동/);
   assert.doesNotMatch(text, /반드시 성공|무조건|확실히 팔/,
     "product should not make deterministic market/success claims");
+  assert.doesNotMatch(
+    report.strengths.join(" "),
+    /을\(를\)/,
+    "strength copy should not expose unresolved Korean particles",
+  );
   assert.ok(report.firstAction.includes("이번 주"), "first action should be immediately testable, not a vague plan");
 });
 
@@ -147,6 +152,8 @@ test("first report UI contract: presentation stays data-driven and preserves the
   assert.match(page, /첫 검증 난이도/);
   assert.match(page, /상세 시장 근거 보기/);
   assert.match(page, /다음 단계 제안/);
+  assert.match(page, /otherDirections\.map/);
+  assert.match(page, /snap-x/);
   assert.match(page, /href="\/chat"/);
   assert.match(page, /ResultActions/);
   assert.doesNotMatch(page, /회당 5~10만원|꾸준한 수요|진입 장벽 낮음/);
