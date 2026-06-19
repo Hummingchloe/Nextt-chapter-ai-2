@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 import { PERSONA_BY_ID, PERSONAS } from "../lib/personas.ts";
 import { classifyAssets, classifyUserTypes, runRecommendation } from "../lib/engine.ts";
@@ -13,6 +15,15 @@ import { buildTimeline } from "../lib/timeline.ts";
 import { deriveTodayAction, microActionAt } from "../lib/note.ts";
 import { extractContextSignals } from "../lib/context-signals.ts";
 import type { DailyNote, DiagnosticSession, QuestionResponseMap } from "../lib/types.ts";
+
+function codeFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    const stat = statSync(path);
+    if (stat.isDirectory()) return codeFiles(path);
+    return /\.(ts|tsx)$/.test(name) ? [path] : [];
+  });
+}
 
 function completedSession(id: string, answers: QuestionResponseMap): DiagnosticSession {
   const recommendation = runRecommendation(answers);
@@ -123,6 +134,13 @@ test("report contract: copy must remain coaching-first and action-oriented", () 
   assert.ok(report.firstAction.includes("이번 주"), "first action should be immediately testable, not a vague plan");
 });
 
+test("retargeting contract: old audience-specific copy must not reappear in app/lib", () => {
+  const forbidden = /맘카페|교회|이민자|한인|미국 정착|육아|동네 성당|미국 한인|엄마·청년|이민 가족/;
+  const files = [...codeFiles("app"), ...codeFiles("lib")];
+  const offenders = files.filter((file) => forbidden.test(readFileSync(file, "utf8")));
+  assert.deepEqual(offenders, [], "old target-specific copy should not remain in app/lib");
+});
+
 test("market check contract: validation layer is source-aware and avoids success guarantees", () => {
   for (const persona of PERSONAS.slice(0, 3)) {
     const rec = runRecommendation(persona.answers);
@@ -144,14 +162,14 @@ test("market check contract: validation layer is source-aware and avoids success
 
 test("context-first input contract: pasted raw text becomes generic signals, not stored excerpts", () => {
   const raw =
-    "요즘 주변 엄마들이 챗GPT와 캔바를 어떻게 써야 하는지 자주 물어봐요. 저는 마케팅 일을 했고 AI로 안내문과 반복 업무를 줄이는 걸 도와준 적이 있어요. 다만 이걸 유료로 팔 수 있을지는 아직 모르겠어요.";
+    "요즘 주변 동료들이 챗GPT와 캔바를 업무에 어떻게 써야 하는지 자주 물어봐요. 저는 마케팅 일을 했고 AI로 안내문과 반복 업무를 줄이는 걸 도와준 적이 있어요. 다만 이걸 유료로 팔 수 있을지는 아직 모르겠어요.";
   const extraction = extractContextSignals(raw);
   const stored = Object.values(extraction.answers).join("\n");
 
   assert.ok(extraction.preview.assetSignals.includes("AI·디지털 연결 신호"));
   assert.equal(extraction.answers.current_thought, "connect_ai");
   assert.equal(extraction.answers.biggest_blocker, "would_anyone_pay");
-  assert.doesNotMatch(stored, /주변 엄마들이 챗GPT와 캔바를 어떻게 써야 하는지/);
+  assert.doesNotMatch(stored, /주변 동료들이 챗GPT와 캔바를 업무에 어떻게 써야 하는지/);
   assert.match(extraction.preview.privacyNotice, /원문은 서버에 저장하지 않고/);
 
   const rec = runRecommendation(extraction.answers);

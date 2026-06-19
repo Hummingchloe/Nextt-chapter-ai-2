@@ -90,7 +90,7 @@ export default async function HomeDashboard({
               <b className="text-ink">{Math.round(compass.confidence * 100)}%</b>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-ink-soft">M 정렬도</span>
+              <span className="text-ink-soft">방향 선명도</span>
               <b className="text-ink">{Math.round(compass.alignment * 100)}%</b>
             </div>
             <div className="flex items-center justify-between gap-3">

@@ -350,7 +350,7 @@ function CompassCard({ compass }: { compass: CompassState | null }) {
         <span className="text-sm font-semibold text-clay">{pct}%</span>
       </div>
       <p className="mt-1.5 text-xs text-ink-faint">
-        정렬도 — {compass ? CONVERGE[compass.status] : "기록 전"}
+        방향 선명도 — {compass ? CONVERGE[compass.status] : "기록 전"}
       </p>
     </div>
   );

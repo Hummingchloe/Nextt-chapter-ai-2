@@ -100,8 +100,8 @@ export const DIRECTIONS: DirectionProfile[] = [
   },
   {
     id: "local_life_guide",
-    label: "로컬 생활 적응 가이드",
-    blurb: "미국 정착·생활 노하우로 새로 온 사람들을 돕는 일",
+    label: "전환기 동행 가이드",
+    blurb: "직무·산업·환경 전환을 먼저 겪어본 경험으로, 같은 길을 걷는 사람을 돕는 일",
     styles: ["one_on_one", "connect"],
     assets: ["life", "community"],
     timeNeed: 1,

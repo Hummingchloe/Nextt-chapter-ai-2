@@ -132,7 +132,7 @@ export interface Roadmap {
 
 export function buildRoadmap(directionId?: string): Roadmap {
   const shortByDir: Record<string, string> = {
-    small_class: "작은 클래스 ‘열어볼까?’를 단톡방에 한 번 물어보기",
+    small_class: "작은 클래스 ‘열어볼까?’를 관련 커뮤니티(링크드인·Slack·단톡방)에 한 번 물어보기",
     community_program: "비슷한 고민의 3명에게 첫 모임을 제안하기",
     ai_beginner_help: "AI를 어려워하는 1명을 30분 옆에서 도와보기",
     digital_guide: "자주 받는 질문 1개를 ‘한 장 가이드’로 만들기",

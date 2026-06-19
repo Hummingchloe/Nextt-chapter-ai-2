@@ -56,7 +56,7 @@ export default async function NoteHome({
         </header>
         <div className="mx-auto max-w-2xl px-6 pb-8 pt-1">
           <p className="text-sm font-semibold uppercase tracking-wider text-clay">
-            My Next Chapter Note
+            My Life Compass Note
           </p>
           <h1 className="mt-2 font-display text-[1.7rem] font-bold leading-snug text-ink sm:text-[2rem]">
             {name ? `${name}님, ` : ""}큰 계획보다

@@ -10,9 +10,9 @@ import { PERSONAS, TEST_TOOLS_ENABLED } from "@/lib/personas";
 import { extractContextSignals, type ContextSignalPreview } from "@/lib/context-signals";
 
 const reassurances = [
-  { icon: "🌿", t: "시험이 아니에요", d: "정답을 맞히는 게 아니라, 가능성을 찾는 시간이에요." },
+  { icon: "🌿", t: "시험이 아니에요", d: "정답을 맞히는 게 아니라, 지금 가능한 방향을 찾는 시간이에요." },
   { icon: "🤍", t: "편하게 답하면 돼요", d: "잘 모르겠는 질문은 가볍게 넘어가도 괜찮아요." },
-  { icon: "⏳", t: "약 15분이면 충분해요", d: "끝나면, 당신만을 위한 한 페이지 결과를 드려요." },
+  { icon: "⏳", t: "약 15분이면 충분해요", d: "끝나면, 당신의 경험을 새 수익 기회로 바꾸는 첫 리포트를 드려요." },
 ];
 
 export default function StartPage() {
@@ -137,11 +137,11 @@ export default function StartPage() {
           <h1 className="mt-6 font-display text-[1.7rem] font-bold leading-snug text-ink sm:text-[2rem]">
             잠깐 숨을 고르고,
             <br />
-            천천히 시작해 볼까요?
+            내 경험을 다시 살펴볼까요?
           </h1>
           <p className="mt-4 leading-relaxed text-ink-soft">
             지금부터 드리는 질문은 당신을 평가하기 위한 게 아니에요. 흩어져 있던
-            경험을 모아, <b className="text-ink">다시 시작할 방향 하나</b>를
+            경험과 기술을 모아, <b className="text-ink">새 수익 기회로 이어질 방향 하나</b>를
             함께 찾기 위한 거예요.
           </p>
 

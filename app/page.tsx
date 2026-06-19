@@ -3,21 +3,21 @@ import TrackView from "./components/TrackView";
 import { LogoMark, Wordmark } from "./components/Logo";
 
 const painPoints = [
-  "나는 도대체 무슨 일로 다시 돈을 벌 수 있지?",
-  "내 경험이… 정말 가치가 있는 걸까?",
-  "지금 내 상황에서 작게 시작할 수 있는 일이 있을까?",
-  "AI는 배웠는데, 이걸 내 일이랑 어떻게 연결하지?",
+  "지금 일 말고, 내 경험으로 새 수익을 만들 수 있을까?",
+  "AI 시대에 내 경험과 기술이 아직 가치가 있을까?",
+  "내 전문성을 상품이나 서비스로 바꿀 수 있을까?",
+  "AI를 배웠거나 관심은 있는데, 내 일과 어떻게 연결하지?",
 ];
 
 const userTypes = [
   {
-    tag: "다시 시작하는 사람",
-    desc: "경력 단절·이민·졸업 이후, 다시 내 일을 찾고 싶은 분 (엄마·청년 누구든)",
+    tag: "전환을 준비하는 경험자",
+    desc: "현재 일에 만족하지 않거나 다음 커리어 방향을 다시 잡고 싶은 분",
     tint: "bg-clay-tint",
   },
   {
     tag: "이미 자산이 있는 전문가",
-    desc: "교육·상담·뷰티·개발 등 경험은 있는데 어떻게 팔지 막힌 분",
+    desc: "교육·상담·운영·마케팅·기술 등 경험은 있는데 어떻게 팔지 막힌 분",
     tint: "bg-sage-tint",
   },
   {
@@ -27,7 +27,7 @@ const userTypes = [
   },
   {
     tag: "사람을 잇는 커넥터",
-    desc: "모임·소개·연결에 강점이 있는, 관계 자산이 큰 분",
+    desc: "커뮤니티·소개·협업 연결에 강점이 있는, 관계 자산이 큰 분",
     tint: "bg-sage-tint",
   },
 ];
@@ -46,7 +46,7 @@ const steps = [
   {
     n: "03",
     t: "대시보드에서 확인해요",
-    d: "정렬도 50% 이상부터 오늘의 액션과 추천 콘텐츠가 열려요.",
+    d: "방향이 충분히 선명해지면 오늘의 액션과 추천 콘텐츠가 열려요.",
   },
 ];
 
@@ -71,14 +71,14 @@ export default function LandingPage() {
         <div className="mx-auto max-w-3xl px-6 pb-20 pt-12 text-center sm:pt-20">
           <p className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 px-4 py-1.5 text-sm text-ink-soft shadow-sm backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-sage" />
-            다시 시작하려는 사람을 위한 Compass Chat
+            AI 시대, 내 경험을 새 수익으로
           </p>
 
           <h1 className="animate-fade-up delay-1 font-display text-[2.1rem] font-bold leading-[1.32] text-ink sm:text-[3.1rem] sm:leading-[1.3]">
-            내가 다시 할 수 있는 일,
+            내 경험이 다시 수익이 되는
             <br />
             <span className="relative inline-block text-clay-deep">
-              그 방향 하나
+              방향 하나
               <svg
                 className="absolute -bottom-2 left-0 w-full"
                 viewBox="0 0 200 12"
@@ -96,13 +96,13 @@ export default function LandingPage() {
               </svg>
             </span>
             <br />
-            함께 찾아드릴게요.
+            함께 찾아요.
           </h1>
 
           <p className="animate-fade-up delay-2 mx-auto mt-7 max-w-xl text-[1.05rem] leading-relaxed text-ink-soft">
-            창업을 배우는 게 아니에요. 흩어져 있던 내 경험과 강점에서,
+            창업을 과장하는 서비스가 아니에요. 흩어져 있던 내 경험과 강점에서,
             <br className="hidden sm:block" />
-            지금 작게 시작할 수 있는 <b className="text-ink">단 하나의 방향</b>을
+            지금 작게 시험해볼 수 있는 <b className="text-ink">새 수익의 방향</b>을
             선명하게 보는 시간이에요.
           </p>
 
@@ -111,11 +111,11 @@ export default function LandingPage() {
               href="/chat"
               className="group inline-flex items-center gap-2 rounded-full bg-clay px-8 py-4 text-[1.05rem] font-semibold text-white shadow-soft transition hover:bg-clay-deep hover:shadow-lift active:scale-[0.98]"
             >
-              채팅으로 시작하기
+              내 방향 찾기
               <span className="transition group-hover:translate-x-0.5">→</span>
             </Link>
             <p className="text-sm text-ink-faint">
-              가입 없이 · 로컬 우선 저장 · 대시보드 자동 갱신
+              가입 없이 · 작게 시작 · 리포트 자동 생성
             </p>
           </div>
         </div>
@@ -127,10 +127,10 @@ export default function LandingPage() {
               대시보드 미리보기
             </p>
             <p className="mt-2 font-display text-lg font-bold text-ink">
-              “지금 정렬도와 다음 행동”
+              “지금 보이는 방향과 다음 행동”
             </p>
             <p className="mt-1 text-sm text-ink-soft">
-              오늘의 액션 · 추천 콘텐츠 · 최근 기록이 한 화면에 정리돼요.
+              오늘의 액션 · 콘텐츠 추천 · 최근 기록이 한 화면에 정리돼요.
             </p>
           </div>
         </div>
@@ -181,18 +181,18 @@ export default function LandingPage() {
               accent="clay"
             />
             <ResultCard
-              title="현재 정렬도"
+              title="현재 방향"
               body="맥락이 충분한지 보고, 추천보다 질문이 먼저인지 판단해요."
               accent="sage"
             />
             <ResultCard
-              title="날짜별 액션 아이템"
-              body="정렬도 50% 이상부터 오늘, 내일, 3일차 행동을 제안해요."
+              title="날짜별 액션"
+              body="방향이 충분히 선명해지면 오늘, 내일, 3일차 행동을 제안해요."
               accent="clay"
             />
             <ResultCard
-              title="추천 콘텐츠와 기록 로그"
-              body="추천 유튜브 링크와 내가 남긴 기록 흐름을 같이 보여줘요."
+              title="콘텐츠 추천과 최근 기록"
+              body="관련 콘텐츠와 내가 남긴 기록 흐름을 같이 보여줘요."
               accent="sage"
             />
           </div>
@@ -207,8 +207,8 @@ export default function LandingPage() {
               누구를 위한 서비스인가요
             </h2>
             <p className="mt-3 text-ink-soft">
-              뭘 모르지만 열망은 큰, 시간 없고 외로운 초기·예비 창업자를 위해
-              만들었어요. 미국 한인 엄마·청년·시니어 누구든요.
+              미국·한국·홍콩 등 여러 국가의 35–55세 경험자 중, AI 시대에
+              내 경험을 새 수익 기회로 바꾸고 싶은 분을 위해 만들었어요.
             </p>
           </div>
           <div className="mt-12 grid gap-5 sm:grid-cols-2">
@@ -281,7 +281,7 @@ export default function LandingPage() {
                 {[
                   "오늘의 가장 작은 행동 1개",
                   "2~3분이면 끝나는 짧은 기록",
-                  "현재 정렬도 자동 갱신",
+                  "현재 방향 자동 갱신",
                   "대시보드 추천 상태 확인",
                 ].map((t) => (
                   <li key={t} className="flex items-center gap-2.5">
@@ -321,18 +321,18 @@ export default function LandingPage() {
         <div className="bg-warm-glow mx-auto max-w-3xl rounded-[2rem] border border-line bg-surface px-8 py-16 text-center shadow-soft">
           <LogoMark className="mx-auto h-12 w-12 animate-breathe" />
           <h2 className="mt-6 font-display text-2xl font-bold leading-snug text-ink sm:text-[2rem]">
-            “이제 나도, 이 방향으로
+            “이제 나도, 내 경험으로
             <br />
-            한번 작게 시작해볼 수 있겠어.”
+            작게 시작해볼 수 있겠어.”
           </h2>
           <p className="mt-4 text-ink-soft">
-            채팅으로 기록할수록 대시보드가 선명해집니다. 당신의 차례예요.
+            채팅으로 기록할수록 방향이 선명해집니다. 당신의 차례예요.
           </p>
           <Link
             href="/chat"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-clay px-8 py-4 text-[1.05rem] font-semibold text-white shadow-soft transition hover:bg-clay-deep hover:shadow-lift active:scale-[0.98]"
           >
-            채팅으로 시작하기 →
+            내 방향 찾기 →
           </Link>
         </div>
       </section>
@@ -342,7 +342,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-ink-faint sm:flex-row">
           <Wordmark />
           <div className="text-center sm:text-right">
-            <p>내가 다시 시작할 수 있는 일의 방향을 찾는 가장 작은 첫걸음.</p>
+            <p>AI 시대에 내 경험을 새 수익 기회로 바꾸는 가장 작은 첫걸음.</p>
             <p className="mt-1 text-xs">
               🔒 당신이 적은 이야기는 방향을 찾는 데만 쓰여요. 회사에 파는 일은 없어요.
             </p>

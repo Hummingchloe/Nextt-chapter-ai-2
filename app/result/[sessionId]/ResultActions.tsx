@@ -28,7 +28,7 @@ export default function ResultActions({
   async function share() {
     track("result_shared", undefined, sessionId);
     const shareData = {
-      title: "My Next Chapter AI 진단 결과",
+      title: "My Life Compass 진단 결과",
       text: `${name ? name + "님의 " : ""}진단 결과를 확인해보세요.`,
       url: typeof window !== "undefined" ? window.location.href : undefined,
     };
@@ -50,7 +50,7 @@ export default function ResultActions({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `my-next-chapter-${name || "result"}.txt`;
+    a.download = `my-life-compass-${name || "result"}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   }

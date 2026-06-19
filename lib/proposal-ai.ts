@@ -107,15 +107,15 @@ async function callProposalClaude(
   const context = buildContext(ontology);
   const system = withWebSearch
     ? [
-        "당신은 My Next Chapter의 콘텐츠 리서처입니다.",
+        "당신은 My Life Compass의 콘텐츠 리서처입니다.",
         "사용자 온톨로지에 맞는 실용적인 YouTube 영상 페이지를 찾습니다.",
         "web_search를 정확히 한 번 사용하세요. 검색 결과에 없는 URL은 만들지 마세요.",
         "검색이 끝나면 JSON 한 줄만 출력하세요.",
         '{"userSummary":"","actions":[],"youtubeLinks":[]}',
       ].join("\n")
     : [
-        "당신은 My Next Chapter의 Proposal Engine입니다.",
-        "사용자의 개인 온톨로지와 Compass 정렬도를 읽고, 지금 당장 할 수 있는 작은 행동을 제안합니다.",
+        "당신은 My Life Compass의 Proposal Engine입니다.",
+        "사용자의 개인 온톨로지와 Compass 방향 선명도를 읽고, 지금 당장 할 수 있는 작은 행동을 제안합니다.",
         "액션은 오늘/내일/3일차로 나누고 각 행동은 15분 안에 시작 가능해야 합니다.",
         "사용자의 실제 자산, 시장 신호, 제약을 구체적으로 반영하세요. 일반적인 자기계발 문구를 금지합니다.",
         "userSummary는 2문장 이내, 각 title은 30자 이내, detail은 60자 이내로 간결하게 작성하세요.",
@@ -275,7 +275,7 @@ function buildContext(ontology: UserOntology): string {
     .map((message) => `- ${message.text}`)
     .join("\n");
   return [
-    `[정렬도] ${ontology.compass.alignment}%`,
+    `[방향 선명도] ${ontology.compass.alignment}%`,
     `[명료도] ${ontology.compass.clarity}%`,
     `[확신도] ${ontology.compass.confidence}%`,
     `[현재 요약] ${ontology.summary}`,

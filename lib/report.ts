@@ -35,7 +35,7 @@ function buildSummary(a: QuestionResponseMap): string {
     dont_know: "내가 무엇을 할 수 있을지 아직 또렷하지 않은 마음",
     is_it_valuable: "내 경험이 정말 가치가 있는지 확인하고 싶은 마음",
     connect_ai: "배운 AI를 내 일과 연결해보고 싶은 마음",
-    alongside_family: "가정을 지키면서 할 수 있는 일을 찾는 마음",
+    alongside_family: "지금의 삶과 일을 유지하면서 AI 시대에 뒤처지지 않고 싶은 마음",
   };
   const wantLine: Record<string, string> = {
     quick_small: "작더라도 곧 손에 잡히는 결과",
@@ -138,7 +138,7 @@ function offerDraft(
     digital_guide: `“${topic}을(를) 한 장씩 따라만 하면 되도록 정리한 가이드를 만들었어요. 같은 고민을 했던 제가, 헤매지 않도록 길을 정리해드립니다.”`,
     ai_beginner_help: `“AI가 어렵게 느껴지는 분, 옆에서 같이 켜고 같이 눌러드려요. ‘${topic}’부터, 당신 일에 바로 쓸 수 있게 1:1로 도와드립니다.”`,
     community_program: `“같은 고민을 가진 분들끼리 작게 모여요. 혼자였다면 막막했을 일을, 함께라서 한 걸음 떼어보는 모임이에요. 첫 모임은 가볍게 차 한잔처럼.”`,
-    local_life_guide: `“미국 정착, 저도 헤매봤어요. ‘${topic}’이 막막한 새로 오신 분께, 제가 먼저 겪은 길을 1:1로 안내해드려요.”`,
+    local_life_guide: `“같은 전환(이직·이주·새 분야), 저도 먼저 겪어봤어요. ‘${topic}’이 막막한 분께 제가 지나온 길을 1:1로 안내해드려요.”`,
     experience_support: `“같은 시간을 먼저 지나온 사람으로서, ‘${topic}’으로 흔들리는 분의 이야기를 들어드리고 다음 방향을 같이 잡아드려요.”`,
   };
   return drafts[directionId] ?? drafts.one_on_one_guide;
@@ -153,31 +153,31 @@ function customerChannels(
   const base: Record<string, string[]> = {
     one_on_one_guide: [
       "이미 당신에게 도움을 청했던 그 사람들 — 가장 가까운 첫 손님이에요",
-      "당신이 활동하는 카카오톡 단톡방·맘카페에 짧은 안내 글 하나",
+      "당신이 활동하는 커뮤니티(링크드인·Slack·단톡방)에 짧은 안내 글 하나",
     ],
     one_on_one_consulting: [
       "예전 동료·지인 중 비슷한 고민을 하던 사람",
-      "관련 주제의 한인 커뮤니티(맘카페, 페이스북 그룹)",
+      "링크드인에서 같은 직무·산업의 사람들",
     ],
     small_class: [
-      "동네 한인 성당·교회·도서관 게시판",
-      "맘카페 ‘소모임/클래스’ 게시판",
+      "관련 분야 온라인 커뮤니티(Slack·디스코드·카페)",
+      "링크드인·뉴스레터로 ‘작게 열어요’ 안내",
     ],
     digital_guide: [
-      "관련 키워드의 네이버 카페·블로그",
+      "관련 키워드로 검색하는 사람들이 모인 커뮤니티(레딧·카페·X)",
       "같은 고민 글이 올라오는 커뮤니티의 댓글 속 사람들",
     ],
     ai_beginner_help: [
-      "‘AI 배우고 싶은데 어렵다’고 말하던 주변 사람",
-      "시니어·초보 대상 한인 커뮤니티",
+      "‘AI 배우고 싶은데 막막하다’던 주변 동료·지인",
+      "직장인·시니어 대상 온라인 커뮤니티",
     ],
     community_program: [
-      "이미 알고 지내는 비슷한 처지의 엄마 3~4명",
-      "동네 모임·교회 소그룹",
+      "이미 알고 지내는 비슷한 처지의 동료 3~4명",
+      "관련 분야 밋업·온라인 모임",
     ],
     local_life_guide: [
-      "최근에 미국으로 막 온 지인·그 지인의 지인",
-      "지역 한인 신규 정착 그룹(페이스북·단톡방)",
+      "최근 같은 전환(이직·이주·새 분야)을 시작한 지인·그 지인의 지인",
+      "관련 전환을 겪는 사람들의 온라인 그룹(링크드인·카페)",
     ],
     experience_support: [
       "당신이 지나온 그 시기를 지금 겪고 있는 사람",
@@ -186,7 +186,7 @@ function customerChannels(
   };
   const list = base[directionId] ?? base.one_on_one_guide;
   if (fmt === "offline")
-    return [list[0], "동네 한인 오프라인 모임·교회·문화센터 게시판"];
+    return [list[0], "관련 분야 밋업·세미나·동호회"];
   return list;
 }
 
@@ -198,7 +198,7 @@ function firstAction(directionId: string): string {
     one_on_one_consulting:
       "이번 주에 당신이 도울 수 있는 고민 한 가지를 정해, 그 고민을 가진 지인 한 명에게 ‘30분만 무료로 이야기 들어줄게’라고 제안해보세요.",
     small_class:
-      "이번 주에 클래스에서 다룰 내용을 딱 3가지로 적어보세요. 그리고 ‘이런 거 작게 열면 올 사람?’이라고 단톡방에 가볍게 물어보세요.",
+      "이번 주에 클래스에서 다룰 내용을 딱 3가지로 적어보세요. 그리고 ‘이런 거 작게 열면 올 사람?’이라고 관련 커뮤니티(링크드인·Slack·단톡방)에 가볍게 물어보세요.",
     digital_guide:
       "이번 주에 당신이 자주 받는 질문 1개에 대한 답을 한 페이지로 정리해보세요. 그게 가이드의 첫 장이에요.",
     ai_beginner_help:
@@ -206,7 +206,7 @@ function firstAction(directionId: string): string {
     community_program:
       "이번 주에 비슷한 고민을 가진 사람 3명에게 ‘우리 한번 모여서 이야기해볼래요?’라고 메시지를 보내보세요.",
     local_life_guide:
-      "이번 주에 최근 미국에 온 지인 한 명에게 ‘정착하면서 제일 막막한 게 뭐예요?’라고 물어보세요. 거기에 당신의 서비스가 있어요.",
+      "이번 주에 최근 같은 전환(이직·이주·새 분야)을 시작한 지인에게 ‘시작하면서 제일 막막한 게 뭐예요?’라고 물어보세요. 거기에 당신의 서비스가 있어요.",
     experience_support:
       "이번 주에 당신이 지나온 시기를 겪는 한 사람에게 ‘그때 저도 그랬어요’라고 먼저 말을 건네보세요. 대화가 곧 시작이에요.",
   };
@@ -259,7 +259,7 @@ function whatToLearn(directionId: string, a: QuestionResponseMap): string[] {
       "작은 모임을 운영하는 기본(주제·주기·인원)을 가볍게 공부해보세요.",
     ],
     local_life_guide: [
-      "새로 온 사람들이 가장 막히는 정착 절차 1가지를 단계별로 정리해보세요.",
+      "같은 전환을 겪는 사람들이 가장 막히는 단계 1가지를 단계별로 정리해보세요.",
     ],
     experience_support: [
       "당신이 지나온 경험을 ‘남에게 도움 되는 한 가지 조언’으로 정리해보세요.",
@@ -340,7 +340,7 @@ export function reportToText(
   name?: string,
 ): string {
   const L: string[] = [];
-  L.push(`My Next Chapter AI — ${name ? name + "님의 " : ""}진단 결과`);
+  L.push(`My Life Compass — ${name ? name + "님의 " : ""}진단 결과`);
   L.push("");
   L.push("■ 지금의 당신");
   L.push(report.summary);
