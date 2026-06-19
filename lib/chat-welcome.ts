@@ -1,6 +1,8 @@
 import type { CompassStatus } from "./compass-engine";
 
 export const CHAT_STARTERS = [
+  "오늘 한 일은...",
+  "누가 내게 물어본 문제는...",
   "오늘 기분은...",
   "오늘 잘한 점은...",
   "오늘 고객이나 주변에서 들은 말은...",

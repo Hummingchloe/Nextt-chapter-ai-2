@@ -50,8 +50,12 @@ test("returning welcome appears on a later local day but not twice in one day", 
   );
 });
 
-test("routine starters stay concise on mobile", () => {
-  assert.equal(CHAT_STARTERS.length, 4);
+test("routine starters keep originals and additions in a scrollable row", () => {
+  assert.equal(CHAT_STARTERS.length, 6);
+  // restored original tags
+  assert.ok(CHAT_STARTERS.some((item) => item.includes("오늘 한 일")));
+  assert.ok(CHAT_STARTERS.some((item) => item.includes("물어본 문제")));
+  // added tags
   assert.ok(CHAT_STARTERS.some((item) => item.includes("기분")));
   assert.ok(CHAT_STARTERS.some((item) => item.includes("고객")));
   assert.ok(CHAT_STARTERS.some((item) => item.includes("내일")));
