@@ -24,6 +24,27 @@ const SOURCE_COLOR: Record<string, string> = {
   action: "var(--color-clay)",
 };
 
+const SOURCE_HELP = [
+  {
+    key: "record",
+    label: "기록",
+    description: "대화와 메모에서 발견한 경험·강점 신호예요.",
+    position: "left-0",
+  },
+  {
+    key: "market",
+    label: "시장",
+    description: "시장 조사와 고객 반응에서 확인된 수요 신호예요.",
+    position: "left-1/2 -translate-x-1/2",
+  },
+  {
+    key: "action",
+    label: "행동",
+    description: "직접 실행하고 남긴 결과에서 생긴 행동 신호예요.",
+    position: "right-0",
+  },
+] as const;
+
 function clamp(x: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, x));
 }
@@ -111,14 +132,24 @@ export default function BeadCompass({ state }: { state: CompassState | null }) {
       </svg>
 
       <div className="mt-2 flex items-center justify-center gap-4 text-xs text-ink-faint">
-        {[
-          ["기록", "record"],
-          ["시장", "market"],
-          ["행동", "action"],
-        ].map(([label, key]) => (
-          <span key={key} className="inline-flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: SOURCE_COLOR[key] }} />
-            {label}
+        {SOURCE_HELP.map(({ key, label, description, position }) => (
+          <span key={key} className="group relative inline-flex">
+            <button
+              type="button"
+              aria-describedby={`bead-help-${key}`}
+              className="inline-flex items-center gap-1.5 rounded-full px-1.5 py-1 transition hover:bg-cream focus:bg-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-clay"
+            >
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: SOURCE_COLOR[key] }} />
+              {label}
+              <span aria-hidden="true" className="text-[10px] text-ink-faint">ⓘ</span>
+            </button>
+            <span
+              id={`bead-help-${key}`}
+              role="tooltip"
+              className={`pointer-events-none absolute bottom-full z-10 mb-2 w-48 rounded-xl bg-ink px-3 py-2 text-left text-[11px] leading-5 text-white opacity-0 shadow-soft transition group-hover:opacity-100 group-focus-within:opacity-100 ${position}`}
+            >
+              {description}
+            </span>
           </span>
         ))}
       </div>

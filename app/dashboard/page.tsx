@@ -187,29 +187,12 @@ export default function DashboardPage() {
                       </div>
                       <p className="mt-2 font-semibold leading-snug text-ink">{a.title}</p>
                       <p className="mt-2 flex-1 text-xs leading-relaxed text-ink-soft">{a.detail}</p>
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {["보냈어요", "만났어요", "작성했어요"].map((tag) => (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() =>
-                              setActionNotes((prev) => ({
-                                ...prev,
-                                [a.id]: prev[a.id] ? `${prev[a.id]} · ${tag}` : tag,
-                              }))
-                            }
-                            className="rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft transition hover:border-clay hover:text-clay"
-                          >
-                            {tag}
-                          </button>
-                        ))}
-                      </div>
                       <textarea
                         value={actionNotes[a.id] ?? ""}
                         onChange={(e) => setActionNotes((prev) => ({ ...prev, [a.id]: e.target.value }))}
                         placeholder="실행 결과를 짧게 남겨주세요"
                         maxLength={240}
-                        className="mt-2 min-h-16 resize-none rounded-xl border border-line bg-surface px-3 py-2 text-xs leading-relaxed text-ink outline-none placeholder:text-ink-faint focus:border-clay"
+                        className="mt-3 min-h-16 resize-none rounded-xl border border-line bg-surface px-3 py-2 text-xs leading-relaxed text-ink outline-none placeholder:text-ink-faint focus:border-clay"
                       />
                       <button
                         onClick={() => complete(a)}
