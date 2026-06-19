@@ -131,3 +131,137 @@
     radial-gradient(60% 50% at 18% 8%, rgba(49, 130, 246, 0.06), transparent 70%),
     radial-gradient(55% 45% at 92% 14%, rgba(49, 130, 246, 0.05), transparent 70%);
 }
+
+/* ── Landing · interactive Compass preview ─────────────── */
+@keyframes compass-arc-draw {
+  from { stroke-dashoffset: 610; opacity: 0.35; }
+  to { stroke-dashoffset: 170; opacity: 0.78; }
+}
+
+@keyframes compass-needle-settle {
+  from { transform: rotate(-8deg); opacity: 0.6; }
+  to { transform: rotate(0deg); opacity: 1; }
+}
+
+@keyframes compass-needle-idle {
+  0%, 100% { transform: rotate(-0.55deg); }
+  50% { transform: rotate(0.55deg); }
+}
+
+@keyframes compass-bead-gather {
+  from {
+    transform: translate(var(--bead-from-x), var(--bead-from-y));
+    opacity: 0.25;
+  }
+  to {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes compass-bead-float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(0, -3px); }
+}
+
+@keyframes compass-halo-breathe {
+  0%, 100% { transform: scale(0.99); opacity: 0.45; }
+  50% { transform: scale(1.015); opacity: 0.62; }
+}
+
+.interactive-compass {
+  perspective: 900px;
+  border-radius: 9999px;
+}
+
+.interactive-compass__tilt {
+  --compass-tilt-x: 0deg;
+  --compass-tilt-y: 0deg;
+  transform: rotateX(var(--compass-tilt-x)) rotateY(var(--compass-tilt-y));
+  transform-style: preserve-3d;
+  transition: transform 180ms ease-out;
+  will-change: transform;
+  border: 1px solid var(--color-line);
+  border-radius: 9999px;
+  background: var(--color-surface);
+  padding: 1rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.interactive-compass__halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: compass-halo-breathe 6.8s ease-in-out infinite;
+}
+
+.interactive-compass__progress {
+  stroke-dasharray: 610;
+  stroke-dashoffset: 170;
+  animation: compass-arc-draw 1.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: opacity 500ms ease, stroke-width 500ms ease;
+}
+
+.interactive-compass__needle-settle,
+.interactive-compass__needle-idle,
+.interactive-compass__needle-react {
+  transform-box: view-box;
+  transform-origin: 150px 151px;
+}
+
+.interactive-compass__needle-settle {
+  animation: compass-needle-settle 1.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.interactive-compass__needle-idle {
+  animation: compass-needle-idle 7s ease-in-out 1.7s infinite;
+}
+
+.interactive-compass__needle-react {
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.interactive-compass__bead-settle {
+  animation: compass-bead-gather 1.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  transition: transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.interactive-compass__bead-float {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: compass-bead-float var(--bead-float-duration) ease-in-out
+    var(--bead-float-delay) infinite;
+}
+
+.interactive-hero:hover .interactive-compass__progress {
+  opacity: 1;
+  stroke-width: 9;
+}
+
+.interactive-hero:hover .interactive-compass__needle-react {
+  transform: rotate(0.8deg) translateY(-1px);
+}
+
+.interactive-hero:hover .interactive-compass__bead-settle {
+  transform: translate(var(--bead-hover-x), var(--bead-hover-y));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-compass__tilt,
+  .interactive-compass__halo,
+  .interactive-compass__needle-settle,
+  .interactive-compass__needle-idle,
+  .interactive-compass__needle-react,
+  .interactive-compass__bead-settle,
+  .interactive-compass__bead-float {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .interactive-compass__progress {
+    animation: none !important;
+    stroke-dashoffset: 170;
+    opacity: 0.78;
+    transition: none !important;
+  }
+}
