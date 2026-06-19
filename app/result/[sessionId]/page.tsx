@@ -9,7 +9,7 @@ import TrackView from "../../components/TrackView";
 import RememberSession from "../../components/RememberSession";
 import ExpertLensCard from "../../components/ExpertLensCard";
 import { buildExpertLens } from "@/lib/expert-lens";
-import ResultActions, { FollowUpCTA } from "./ResultActions";
+import ResultActions from "./ResultActions";
 
 export const dynamic = "force-dynamic";
 
@@ -309,13 +309,6 @@ export default async function ResultPage({
             결과를 보관하거나 나눠보세요
           </p>
           <ResultActions sessionId={sessionId} reportText={reportText} name={name} />
-        </section>
-
-        <section className="mt-10 space-y-4">
-          <p className="text-center text-lg font-extrabold tracking-[-0.03em] text-ink">
-            다음 걸음도 함께할까요?
-          </p>
-          <FollowUpCTA sessionId={sessionId} />
         </section>
 
         <div className="mt-10 text-center">
