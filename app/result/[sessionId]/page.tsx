@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getSession } from "@/lib/store";
 import { reportToText } from "@/lib/report";
 import { ASSET_LABEL, USER_TYPE_LABEL } from "@/lib/engine";
+import { BRAND } from "@/lib/brand";
 import { Wordmark } from "../../components/Logo";
 import TrackView from "../../components/TrackView";
 import RememberSession from "../../components/RememberSession";
@@ -11,6 +12,21 @@ import { buildExpertLens } from "@/lib/expert-lens";
 import ResultActions, { FollowUpCTA } from "./ResultActions";
 
 export const dynamic = "force-dynamic";
+
+const MARKET_STAGE = {
+  ready_to_test: {
+    label: "시험해볼 단계",
+    description: "작은 제안을 실제 사람에게 보여주며 반응을 확인해볼 수 있어요.",
+  },
+  needs_narrowing: {
+    label: "좁혀가는 중",
+    description: "누구의 어떤 문제를 풀지 한 번 더 좁히면 검증이 쉬워져요.",
+  },
+  needs_evidence: {
+    label: "신호를 모으는 중",
+    description: "가격보다 먼저, 이 문제를 가진 사람의 말을 더 들어볼 때예요.",
+  },
+} as const;
 
 export default async function ResultPage({
   params,
@@ -24,9 +40,7 @@ export default async function ResultPage({
   if (session.status !== "completed" || !session.report || !session.recommendation) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="font-display text-xl font-bold text-ink">
-          아직 결과가 준비되지 않았어요.
-        </p>
+        <p className="font-display text-xl text-ink">아직 결과가 준비되지 않았어요.</p>
         <Link href="/start" className="text-clay underline">
           진단을 다시 시작하기
         </Link>
@@ -39,9 +53,16 @@ export default async function ResultPage({
   const name = session.name;
   const reportText = reportToText(r, name);
   const lens = buildExpertLens(session, session.notes ?? []);
+  const topDirection = r.directions.find(
+    (direction) => direction.label === r.topRecommendation.label,
+  );
+  const otherDirections = r.directions.filter(
+    (direction) => direction.label !== r.topRecommendation.label,
+  );
+  const marketStage = r.marketCheck ? MARKET_STAGE[r.marketCheck.verdict] : null;
 
   return (
-    <main className="bg-cream pb-24">
+    <main className="min-h-dvh overflow-x-hidden bg-cream pb-24">
       <TrackView event="result_viewed" meta={{ topDirection: rec.topDirection.label }} />
       <RememberSession
         sessionId={sessionId}
@@ -49,326 +70,258 @@ export default async function ResultPage({
         direction={r.topRecommendation.label}
       />
 
-      {/* Header band */}
-      <div className="bg-warm-glow border-b border-line">
-        <header className="mx-auto flex max-w-3xl items-center justify-between px-6 py-6">
-          <Link href="/">
-            <Wordmark />
-          </Link>
-          <span className="rounded-full border border-line bg-surface/70 px-3 py-1 text-xs text-ink-soft">
-            {USER_TYPE_LABEL[rec.primaryUserType]}
-          </span>
-        </header>
+      <header className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-5 sm:px-6">
+        <Link href="/" aria-label={`${BRAND.name} 홈으로`}>
+          <Wordmark />
+        </Link>
+        <span className="max-w-[46%] truncate rounded-full bg-clay-tint px-3 py-1.5 text-center text-xs font-semibold text-clay-deep sm:max-w-none">
+          {USER_TYPE_LABEL[rec.primaryUserType]}
+        </span>
+      </header>
 
-        <div className="mx-auto max-w-3xl px-6 pb-12 pt-2 text-center">
-          <p className="animate-fade-up text-sm font-semibold uppercase tracking-wider text-clay">
-            {name ? `${name}님을 위한 진단 결과` : "당신을 위한 진단 결과"}
+      <div className="mx-auto max-w-[620px] px-5 pt-5 sm:px-6 sm:pt-8">
+        <section className="text-center">
+          <p className="text-xs font-semibold tracking-[0.16em] text-ink-faint">
+            {BRAND.name.toUpperCase()} · 첫 방향 리포트
           </p>
-          <h1 className="animate-fade-up delay-1 mx-auto mt-4 max-w-2xl font-display text-[1.7rem] font-bold leading-[1.45] text-ink sm:text-[2.2rem]">
-            {r.summary}
+          <h1 className="mt-4 text-[1.8rem] font-extrabold leading-[1.3] tracking-[-0.04em] text-ink sm:text-[2.25rem]">
+            흩어져 있던 경험에서,
+            <br />
+            방향 하나가 보여요.
           </h1>
-        </div>
-      </div>
+          <p className="mx-auto mt-5 max-w-[52ch] text-[0.98rem] leading-7 text-ink-soft">
+            {r.summary}
+          </p>
+        </section>
 
-      <div className="mx-auto max-w-3xl space-y-10 px-6 pt-12">
-        {/* 강점 */}
-        <Section index="01" title="당신의 강점">
-          <ul className="space-y-3">
-            {r.strengths.map((s, i) => (
-              <li
-                key={i}
-                className="flex gap-3 rounded-2xl border border-line bg-surface p-5 leading-relaxed text-ink shadow-sm"
-              >
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-clay-tint text-sm font-bold text-clay-deep">
-                  {i + 1}
-                </span>
-                <span>{s}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {rec.assetTypes.map((a) => (
-              <span
-                key={a}
-                className="rounded-full bg-sage-tint px-3 py-1 text-xs font-medium text-sage"
-              >
-                {ASSET_LABEL[a]}
-              </span>
-            ))}
-          </div>
-        </Section>
-
-        {/* 방향 3가지 */}
-        <Section index="02" title="당신에게 맞는 일의 방향 3가지">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {r.directions.map((d, i) => {
-              const isTop = d.label === r.topRecommendation.label;
-              return (
+        <div className="mt-12 space-y-10">
+          <ReportSection index="01" title="당신의 강점">
+            <div className="space-y-3">
+              {r.strengths.map((strength, index) => (
                 <div
-                  key={i}
-                  className={`rounded-2xl border p-5 ${
-                    isTop
-                      ? "border-clay bg-clay-tint shadow-soft"
-                      : "border-line bg-surface shadow-sm"
-                  }`}
+                  key={index}
+                  className="rounded-2xl border border-line bg-surface px-5 py-4 text-[0.96rem] leading-7 text-ink"
                 >
-                  <span className="font-display text-2xl font-bold text-clay/40">
-                    {i + 1}
-                  </span>
-                  <p className="mt-1 font-display text-lg font-bold text-ink">
-                    {d.label}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                    {d.why}
-                  </p>
-                  {isTop && (
-                    <span className="mt-3 inline-block rounded-full bg-clay px-2.5 py-0.5 text-xs font-semibold text-white">
-                      1순위
-                    </span>
-                  )}
+                  {strength}
                 </div>
-              );
-            })}
-          </div>
-        </Section>
-
-        {/* 1순위 추천 */}
-        <Section index="03" title="지금 가장 잘 맞는 1순위 방향">
-          <div className="overflow-hidden rounded-3xl border border-clay/40 bg-surface shadow-soft">
-            <div className="bg-clay px-7 py-6 text-white">
-              <p className="text-sm opacity-90">가장 현실적인 첫 시작</p>
-              <p className="mt-1 font-display text-2xl font-bold">
-                {r.topRecommendation.label}
-              </p>
+              ))}
             </div>
-            <div className="px-7 py-6">
-              <p className="text-sm font-semibold text-ink-soft">
-                왜 이 방향일까요?
+            <div className="mt-4 flex flex-wrap gap-2">
+              {rec.assetTypes.map((asset) => (
+                <span
+                  key={asset}
+                  className="rounded-full bg-clay-tint px-3 py-1.5 text-xs font-semibold text-clay-deep"
+                >
+                  {ASSET_LABEL[asset]}
+                </span>
+              ))}
+            </div>
+          </ReportSection>
+
+          <ReportSection index="02" title="지금 가장 맞는 방향">
+            <div className="rounded-3xl bg-ink px-6 py-7 text-white sm:px-7">
+              <p className="text-xs font-semibold tracking-[0.12em] text-white/60">
+                1순위 · 가장 현실적인 첫 시작
               </p>
-              <ul className="mt-3 space-y-2">
-                {r.topRecommendation.reasons.map((reason, i) => (
-                  <li key={i} className="flex items-start gap-2 text-ink">
-                    <span className="mt-1 text-clay">✓</span>
+              <h2 className="mt-2 text-[1.45rem] font-extrabold tracking-[-0.035em]">
+                {r.topRecommendation.label}
+              </h2>
+              {topDirection?.why && (
+                <p className="mt-2 text-sm leading-6 text-white/70">{topDirection.why}</p>
+              )}
+              <ul className="mt-5 space-y-3">
+                {r.topRecommendation.reasons.map((reason) => (
+                  <li key={reason} className="flex items-start gap-3 text-sm leading-6 text-white/90">
+                    <span
+                      aria-hidden="true"
+                      className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-clay"
+                    />
                     {reason}
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
-        </Section>
+            {otherDirections.length > 0 && (
+              <p className="mt-3 text-center text-xs leading-5 text-ink-faint">
+                맞는 방향이 {otherDirections.length}개 더 있어요. 지금은 이 하나에
+                집중해도 충분해요.
+              </p>
+            )}
+          </ReportSection>
 
-        {/* 첫 오퍼 초안 */}
-        <Section index="04" title="첫 오퍼 초안">
-          <div className="rounded-3xl border border-line bg-gradient-to-br from-cream-2 to-surface p-7 shadow-sm">
-            <span className="font-display text-5xl leading-none text-clay/30">
-              “
-            </span>
-            <p className="-mt-4 font-display text-[1.15rem] font-medium leading-relaxed text-ink">
-              {r.offerDraft}
-            </p>
-            <p className="mt-4 text-sm text-ink-faint">
-              그대로 써도 좋고, 당신의 말투로 바꿔도 좋아요.
-            </p>
-          </div>
-        </Section>
-
-        {/* Market Check */}
-        {r.marketCheck && (
-          <Section index="05" title="시장 코칭">
-            <div className="rounded-3xl border border-gold/50 bg-surface p-6 shadow-sm">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-ink-soft">
-                    오퍼를 실제 사람에게 보여주기 전 확인할 것
-                  </p>
-                  <p className="mt-2 font-display text-xl font-bold leading-snug text-ink">
-                    {r.marketCheck.coaching}
-                  </p>
+          {r.marketCheck && marketStage && (
+            <ReportSection index="03" title="이 방향, 시장에서 통할까?">
+              <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-ink-soft">시장 확인 단계</p>
+                    <p className="mt-1 text-lg font-extrabold tracking-[-0.025em] text-ink">
+                      {marketStage.label}
+                    </p>
+                  </div>
+                  <span className="rounded-lg bg-sage-tint px-3 py-1.5 text-xs font-semibold text-sage">
+                    검증 점수 {r.marketCheck.score}
+                  </span>
                 </div>
-                <div className="shrink-0 rounded-2xl border border-line bg-cream px-4 py-3 text-center">
-                  <p className="text-xs font-semibold text-ink-soft">검증 점수</p>
-                  <p className="font-display text-2xl font-bold text-clay">
-                    {r.marketCheck.score}
+
+                <div
+                  className="mt-5 h-2 overflow-hidden rounded-full bg-sand"
+                  role="progressbar"
+                  aria-label="시장 검증 점수"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={r.marketCheck.score}
+                >
+                  <div
+                    className="h-full rounded-full bg-clay"
+                    style={{ width: `${Math.max(4, Math.min(100, r.marketCheck.score))}%` }}
+                  />
+                </div>
+
+                <p className="mt-4 text-sm leading-6 text-ink-soft">
+                  {marketStage.description}
+                </p>
+                <p className="mt-3 text-[0.96rem] font-semibold leading-7 text-ink">
+                  {r.marketCheck.coaching}
+                </p>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <SignalList title="확인된 수요 신호" items={r.marketCheck.demandSignals} />
+                  <SignalList title="더 확인할 것" items={r.marketCheck.riskSignals} />
+                </div>
+
+                <div className="mt-5 rounded-2xl bg-cream-2 p-5">
+                  <p className="text-xs font-semibold text-clay-deep">먼저 물어볼 질문</p>
+                  <p className="mt-2 text-sm leading-6 text-ink">
+                    {r.marketCheck.validationQuestion}
                   </p>
                 </div>
               </div>
+            </ReportSection>
+          )}
 
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <SignalList
-                  title="수요 신호"
-                  tone="demand"
-                  items={r.marketCheck.demandSignals}
-                />
-                <SignalList
-                  title="확인할 리스크"
-                  tone="risk"
-                  items={r.marketCheck.riskSignals}
-                />
-              </div>
-
-              <div className="mt-5 rounded-2xl bg-cream-2 p-5">
-                <p className="text-xs font-semibold uppercase tracking-wider text-clay-deep">
-                  검증 질문
-                </p>
-                <p className="mt-2 font-medium leading-relaxed text-ink">
-                  {r.marketCheck.validationQuestion}
-                </p>
-                <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-clay-deep">
-                  첫 실험
-                </p>
-                <p className="mt-2 leading-relaxed text-ink-soft">
+          <ReportSection index="04" title="이번 주, 가장 작은 첫 행동">
+            <div className="rounded-2xl border border-sage/30 bg-sage-tint p-5 sm:p-6">
+              <p className="text-xs font-semibold text-sage">방향을 검증으로</p>
+              <p className="mt-2 text-[1rem] font-semibold leading-7 text-ink">
+                {r.firstAction}
+              </p>
+              {r.marketCheck?.firstExperiment && (
+                <p className="mt-4 border-t border-sage/20 pt-4 text-sm leading-6 text-ink-soft">
                   {r.marketCheck.firstExperiment}
                 </p>
-              </div>
-
-              <div className="mt-5 space-y-2">
-                {r.marketCheck.sources.map((source) => (
-                  <div
-                    key={source.label}
-                    className="rounded-2xl border border-line bg-cream/60 px-4 py-3 text-sm text-ink-soft"
-                  >
-                    <p className="font-semibold text-ink">{source.label}</p>
-                    <p className="mt-1 leading-relaxed">{source.why}</p>
-                    {source.url && (
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-2 inline-block text-clay underline"
-                      >
-                        공개 검색으로 확인하기
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
+              )}
             </div>
-          </Section>
-        )}
+          </ReportSection>
+        </div>
 
-        {/* 첫 고객 채널 */}
-        <Section index="06" title="첫 손님은 어디에 있을까요">
-          <ul className="space-y-3">
-            {r.customerChannels.map((c, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-5 text-ink shadow-sm"
-              >
-                <span className="text-lg">📍</span>
-                <span className="leading-relaxed">{c}</span>
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        {/* 이번 주 첫 행동 */}
-        <Section index="07" title="이번 주, 가장 작은 첫 행동">
-          <div className="rounded-3xl border border-sage/40 bg-sage-tint p-7">
-            <p className="text-lg font-medium leading-relaxed text-ink">
-              {r.firstAction}
-            </p>
-          </div>
-        </Section>
-
-        {/* 다음으로 해볼 것들 — 공부 · 사람 · 도구 */}
-        {(r.whatToLearn?.length ||
-          r.peopleToReach?.length ||
-          r.toolsToTry?.length) && (
-          <Section index="08" title="다음으로 해볼 것들">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <NextThing
-                emoji="📚"
-                title="지금 공부하면 좋은 것"
-                items={r.whatToLearn}
-              />
-              <NextThing
-                emoji="🤝"
-                title="만나보면 좋은 사람"
-                items={r.peopleToReach}
-              />
-              <NextThing
-                emoji="🛠"
-                title="써보면 좋은 도구"
-                items={r.toolsToTry}
-              />
-            </div>
-          </Section>
-        )}
-
-        {/* 전문가 렌즈 — 막힘을 뚫는 관점 */}
-        <Section index="09" title="전문가 렌즈">
-          <ExpertLensCard lens={lens} sessionId={sessionId} />
-        </Section>
-
-        {/* 마지막 한마디 */}
-        <div className="rounded-3xl bg-ink px-8 py-10 text-center">
-          <p className="font-display text-xl font-bold leading-relaxed text-cream sm:text-2xl">
+        <section className="mt-12 rounded-3xl bg-ink px-6 py-9 text-center sm:px-8">
+          <p className="text-lg font-extrabold leading-8 tracking-[-0.03em] text-white sm:text-xl">
             {r.closing}
           </p>
-        </div>
-
-        {/* 다음 단계 — 오늘의 첫 걸음 (My Life Compass Note) */}
-        <div className="bg-warm-glow rounded-3xl border border-clay/30 bg-surface px-7 py-9 text-center shadow-soft">
-          <span className="text-3xl">🌅</span>
-          <h2 className="mt-4 font-display text-xl font-bold leading-snug text-ink sm:text-2xl">
-            이 방향으로 오늘의
-            <br />
-            첫 걸음을 시작해볼까요?
-          </h2>
-          <p className="mt-3 leading-relaxed text-ink-soft">
-            크게 하지 않아도 괜찮아요. 오늘은 15분 안에 할 수 있는
-            <br className="hidden sm:block" />
-            작은 행동 하나면 충분해요.
-          </p>
-          <Link
-            href={`/next/${sessionId}`}
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-clay px-7 py-3.5 font-semibold text-white shadow-soft transition hover:bg-clay-deep active:scale-[0.99]"
-          >
-            오늘의 작은 행동 보기 →
-          </Link>
-        </div>
-
-        {/* Minimal safe handoff: first report -> chat entry. */}
-        <div className="rounded-3xl border border-line bg-surface px-7 py-9 text-center shadow-soft">
-          <h2 className="font-display text-xl font-bold leading-snug text-ink sm:text-2xl">
-            이제 채팅에서 이어가볼까요?
-          </h2>
-          <p className="mt-3 leading-relaxed text-ink-soft">
-            첫 리포트는 출발점이에요. 오늘 느낀 점이나 바로 해볼 일을 채팅에
-            남기면 나침반이 조금씩 더 선명해집니다.
+          <p className="mx-auto mt-3 max-w-[42ch] text-sm leading-6 text-white/60">
+            첫 리포트는 출발점이에요. 오늘 느낀 점을 남기면 방향이 조금씩 더
+            또렷해집니다.
           </p>
           <Link
             href="/chat"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3.5 font-semibold text-white shadow-soft transition hover:opacity-90 active:scale-[0.99]"
+            className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-clay px-6 py-3 text-sm font-bold text-white transition hover:bg-clay-deep active:scale-[0.99]"
           >
-            채팅에서 이어가기 →
+            채팅으로 이어가기 →
           </Link>
-        </div>
+        </section>
 
-        {/* Actions */}
-        <div className="space-y-5 border-t border-line pt-10">
+        <details className="group mt-8 rounded-2xl border border-line bg-surface">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-semibold text-ink">
+            리포트 자세히 보기
+            <span
+              aria-hidden="true"
+              className="text-xl font-normal text-ink-faint transition group-open:rotate-45"
+            >
+              +
+            </span>
+          </summary>
+          <div className="space-y-8 border-t border-line px-5 py-6">
+            {otherDirections.length > 0 && (
+              <DetailBlock title="함께 나온 다른 방향">
+                <div className="space-y-3">
+                  {otherDirections.map((direction) => (
+                    <div key={direction.label} className="rounded-xl bg-cream-2 p-4">
+                      <p className="font-semibold text-ink">{direction.label}</p>
+                      <p className="mt-1 text-sm leading-6 text-ink-soft">{direction.why}</p>
+                    </div>
+                  ))}
+                </div>
+              </DetailBlock>
+            )}
+
+            <DetailBlock title="첫 오퍼 가설">
+              <div className="rounded-xl bg-cream-2 p-4 text-sm leading-7 text-ink">
+                {r.offerDraft}
+              </div>
+            </DetailBlock>
+
+            <DetailList title="첫 고객을 만날 곳" items={r.customerChannels} />
+
+            {r.marketCheck?.sources?.length ? (
+              <DetailBlock title="시장 확인 근거">
+                <div className="space-y-3">
+                  {r.marketCheck.sources.map((source) => (
+                    <div key={source.label} className="rounded-xl border border-line p-4">
+                      <p className="text-sm font-semibold text-ink">{source.label}</p>
+                      <p className="mt-1 text-sm leading-6 text-ink-soft">{source.why}</p>
+                      {source.url && (
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-clay underline"
+                        >
+                          공개 검색으로 확인하기
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </DetailBlock>
+            ) : null}
+
+            {(r.whatToLearn?.length ||
+              r.peopleToReach?.length ||
+              r.toolsToTry?.length) && (
+              <DetailBlock title="다음으로 해볼 것들">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <CompactList title="공부할 것" items={r.whatToLearn} />
+                  <CompactList title="만나볼 사람" items={r.peopleToReach} />
+                  <CompactList title="써볼 도구" items={r.toolsToTry} />
+                </div>
+              </DetailBlock>
+            )}
+
+            <DetailBlock title="전문가 렌즈">
+              <ExpertLensCard lens={lens} sessionId={sessionId} />
+            </DetailBlock>
+          </div>
+        </details>
+
+        <section className="mt-10 space-y-5 border-t border-line pt-8">
           <p className="text-center text-sm font-semibold text-ink-soft">
             결과를 보관하거나 나눠보세요
           </p>
-          <ResultActions
-            sessionId={sessionId}
-            reportText={reportText}
-            name={name}
-          />
-        </div>
+          <ResultActions sessionId={sessionId} reportText={reportText} name={name} />
+        </section>
 
-        {/* Follow-up */}
-        <div className="space-y-4 pt-4">
-          <p className="text-center font-display text-lg font-bold text-ink">
+        <section className="mt-10 space-y-4">
+          <p className="text-center text-lg font-extrabold tracking-[-0.03em] text-ink">
             다음 걸음도 함께할까요?
           </p>
           <FollowUpCTA sessionId={sessionId} />
-        </div>
+        </section>
 
-        <div className="pt-6 text-center">
+        <div className="mt-10 text-center">
           <Link
             href="/start"
-            className="text-sm text-ink-soft underline transition hover:text-clay"
+            className="inline-flex min-h-11 items-center text-sm text-ink-soft underline transition hover:text-clay"
           >
             다시 진단하기
           </Link>
@@ -378,7 +331,7 @@ export default async function ResultPage({
   );
 }
 
-function Section({
+function ReportSection({
   index,
   title,
   children,
@@ -390,8 +343,8 @@ function Section({
   return (
     <section>
       <div className="mb-4 flex items-center gap-3">
-        <span className="font-display text-sm font-bold text-clay">{index}</span>
-        <h2 className="font-display text-xl font-bold text-ink sm:text-2xl">
+        <span className="text-xs font-semibold text-ink-faint">{index}</span>
+        <h2 className="text-[1.12rem] font-extrabold tracking-[-0.03em] text-ink">
           {title}
         </h2>
       </div>
@@ -400,29 +353,15 @@ function Section({
   );
 }
 
-function SignalList({
-  title,
-  tone,
-  items,
-}: {
-  title: string;
-  tone: "demand" | "risk";
-  items: string[];
-}) {
+function SignalList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div
-      className={`rounded-2xl border p-5 ${
-        tone === "demand"
-          ? "border-sage/40 bg-sage-tint"
-          : "border-clay/30 bg-clay-tint"
-      }`}
-    >
-      <p className="font-display text-base font-bold text-ink">{title}</p>
+    <div className="rounded-xl border border-line bg-cream/70 p-4">
+      <p className="text-xs font-semibold text-ink-soft">{title}</p>
       <ul className="mt-3 space-y-2">
-        {items.map((item, i) => (
-          <li key={i} className="flex gap-2 text-sm leading-relaxed text-ink-soft">
-            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-clay" />
-            <span>{item}</span>
+        {items.map((item) => (
+          <li key={item} className="flex items-start gap-2 text-sm leading-6 text-ink">
+            <span aria-hidden="true" className="mt-2.5 h-1 w-1 shrink-0 rounded-full bg-clay" />
+            {item}
           </li>
         ))}
       </ul>
@@ -430,26 +369,45 @@ function SignalList({
   );
 }
 
-function NextThing({
-  emoji,
+function DetailBlock({
   title,
-  items,
+  children,
 }: {
-  emoji: string;
   title: string;
-  items?: string[];
+  children: React.ReactNode;
 }) {
+  return (
+    <section>
+      <h3 className="mb-3 text-sm font-extrabold text-ink">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function DetailList({ title, items }: { title: string; items?: string[] }) {
   if (!items?.length) return null;
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
-      <p className="flex items-center gap-2 font-display text-base font-bold text-ink">
-        <span>{emoji}</span>
-        {title}
-      </p>
-      <ul className="mt-3 space-y-2">
-        {items.map((it, i) => (
-          <li key={i} className="text-sm leading-relaxed text-ink-soft">
-            {it}
+    <DetailBlock title={title}>
+      <ul className="space-y-2">
+        {items.map((item) => (
+          <li key={item} className="rounded-xl bg-cream-2 px-4 py-3 text-sm leading-6 text-ink">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </DetailBlock>
+  );
+}
+
+function CompactList({ title, items }: { title: string; items?: string[] }) {
+  if (!items?.length) return null;
+  return (
+    <div className="rounded-xl bg-cream-2 p-4">
+      <p className="text-xs font-semibold text-ink-soft">{title}</p>
+      <ul className="mt-2 space-y-2">
+        {items.map((item) => (
+          <li key={item} className="text-sm leading-6 text-ink">
+            {item}
           </li>
         ))}
       </ul>
