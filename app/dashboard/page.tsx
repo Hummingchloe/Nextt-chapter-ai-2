@@ -155,6 +155,19 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            <Link
+              href="/roadmap"
+              className="group flex items-center justify-between gap-4 rounded-[1.25rem] border border-line bg-surface p-5 shadow-sm transition hover:border-clay hover:shadow-soft"
+            >
+              <div>
+                <p className="text-sm font-semibold text-ink">내 여정 보기</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                  첫 리포트부터 지금의 행동과 방향까지 이어서 봅니다.
+                </p>
+              </div>
+              <span className="text-xl text-clay transition group-hover:translate-x-1">→</span>
+            </Link>
+
             <MetricGrid compass={compass} />
           </aside>
 

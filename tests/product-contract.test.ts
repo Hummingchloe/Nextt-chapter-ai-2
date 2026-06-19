@@ -134,11 +134,40 @@ test("report contract: copy must remain coaching-first and action-oriented", () 
   assert.ok(report.firstAction.includes("이번 주"), "first action should be immediately testable, not a vague plan");
 });
 
+test("first report UI contract: presentation stays data-driven and preserves the safe handoff", () => {
+  const page = readFileSync("app/result/[sessionId]/page.tsx", "utf8");
+
+  assert.match(page, /첫 방향 리포트/);
+  assert.match(page, /r\.strengths/);
+  assert.match(page, /r\.topRecommendation/);
+  assert.match(page, /r\.marketCheck/);
+  assert.match(page, /href="\/chat"/);
+  assert.match(page, /ResultActions/);
+  assert.doesNotMatch(page, /회당 5~10만원|꾸준한 수요|진입 장벽 낮음/);
+});
+
 test("retargeting contract: old audience-specific copy must not reappear in app/lib", () => {
-  const forbidden = /맘카페|교회|이민자|한인|미국 정착|육아|동네 성당|미국 한인|엄마·청년|이민 가족/;
+  const forbidden =
+    /맘카페|교회|이민자|한인|미국 정착|미국 생활\/커뮤니티|새 지역에 막 정착|육아|동네 성당|미국 한인|엄마·청년|이민 가족/;
   const files = [...codeFiles("app"), ...codeFiles("lib")];
   const offenders = files.filter((file) => forbidden.test(readFileSync(file, "utf8")));
   assert.deepEqual(offenders, [], "old target-specific copy should not remain in app/lib");
+});
+
+test("retargeting contract: the first report frames legacy experience fields as global professional context", () => {
+  const answers = PERSONA_BY_ID.expert.answers;
+  const report = buildReport(answers, runRecommendation(answers));
+  const reportCopy = [
+    report.summary,
+    report.offerDraft,
+    report.firstAction,
+    ...(report.marketCheck?.demandSignals ?? []),
+    report.marketCheck?.firstExperiment ?? "",
+    ...report.customerChannels,
+  ].join("\n");
+
+  assert.doesNotMatch(reportCopy, /미국 생활\/커뮤니티|새 지역에 막 정착/);
+  assert.match(reportCopy, /역할|직무|산업|전환|경험|전문성/);
 });
 
 test("market check contract: validation layer is source-aware and avoids success guarantees", () => {

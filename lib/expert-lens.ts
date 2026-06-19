@@ -41,7 +41,7 @@ const TEMPLATES: Record<string, LensTemplate> = {
     blocker: "내가 충분히 잘하는지 확신이 없음",
     perspective:
       "전문성은 ‘많이 아는 것’이 아니라 ‘한 사람의 다음 한 걸음을 풀어주는 것’이에요. 첫 고객에게는 지금의 당신으로 충분해요.",
-    searchHints: ["‘작게 시작한 1인 창업’ 인터뷰", "‘imposter syndrome 극복’ 이야기"],
+    searchHints: ["‘경험으로 작게 시작한 서비스’ 인터뷰", "‘imposter syndrome 극복’ 이야기"],
     apply: (t) =>
       `‘완벽한 전문가가 된 다음’이 아니라, ‘${t}로 지금 바로 도울 수 있는 1명’부터 정해보세요.`,
     action: () => "지금 바로 도울 수 있는 사람 1명을 떠올려 이름을 적어보세요.",

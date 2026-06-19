@@ -87,30 +87,3 @@ export default function ResultActions({
     </div>
   );
 }
-
-export function FollowUpCTA({ sessionId }: { sessionId: string }) {
-  const items = [
-    { t: "내 오퍼 문장 다듬기", d: "첫 제안을 더 자연스럽게", soon: true },
-    { t: "첫 고객 메시지 만들기", d: "보낼 메시지 초안 생성", soon: true },
-    { t: "결과 이메일로 받기", d: "나중에 다시 보기", soon: true },
-  ];
-  return (
-    <div className="grid gap-3 sm:grid-cols-3">
-      {items.map((it) => (
-        <button
-          key={it.t}
-          onClick={() => track("followup_cta_clicked", { label: it.t }, sessionId)}
-          className="rounded-2xl border border-line bg-surface px-5 py-4 text-left transition hover:border-clay hover:shadow-soft"
-        >
-          <p className="font-semibold text-ink">{it.t}</p>
-          <p className="mt-1 text-sm text-ink-soft">{it.d}</p>
-          {it.soon && (
-            <span className="mt-2 inline-block rounded-full bg-sage-tint px-2.5 py-0.5 text-xs font-medium text-sage">
-              곧 만나요
-            </span>
-          )}
-        </button>
-      ))}
-    </div>
-  );
-}
