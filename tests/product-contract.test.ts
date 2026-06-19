@@ -154,7 +154,8 @@ test("first report UI contract: presentation stays data-driven and preserves the
   assert.match(page, /다음 단계 제안/);
   assert.match(page, /otherDirections\.map/);
   assert.match(page, /snap-x/);
-  assert.match(page, /href="\/chat"/);
+  assert.match(page, /\/chat\?entry=onboarding/);
+  assert.match(page, /encodeURIComponent\(sessionId\)/);
   assert.match(page, /ResultActions/);
   assert.doesNotMatch(page, /회당 5~10만원|꾸준한 수요|진입 장벽 낮음/);
 });

@@ -365,7 +365,7 @@ export default async function ResultPage({
             또렷해집니다.
           </p>
           <Link
-            href="/chat"
+            href={`/chat?entry=onboarding&sid=${encodeURIComponent(sessionId)}`}
             className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-clay px-6 py-3 text-sm font-bold text-white transition hover:bg-clay-deep active:scale-[0.99]"
           >
             채팅으로 이어가기 →
