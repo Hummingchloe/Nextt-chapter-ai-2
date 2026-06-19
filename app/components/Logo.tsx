@@ -1,27 +1,16 @@
+import { BRAND } from "@/lib/brand";
+
 export function LogoMark({ className = "" }: { className?: string }) {
-  // A gentle sunrise — a new chapter beginning.
   return (
     <svg
-      viewBox="0 0 32 32"
+      viewBox="0 0 40 40"
       className={className}
       fill="none"
       aria-hidden="true"
     >
-      <path
-        d="M16 7c5 0 9 4 9 9H7c0-5 4-9 9-9Z"
-        fill="var(--color-clay)"
-        opacity="0.95"
-      />
-      <path
-        d="M16 11c2.8 0 5 2.2 5 5h-10c0-2.8 2.2-5 5-5Z"
-        fill="var(--color-gold)"
-      />
-      <path
-        d="M3 20h26M7.5 24h17M11 28h10"
-        stroke="var(--color-sage)"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+      <circle cx="20" cy="20" r="18" stroke="var(--color-ink)" strokeWidth="1.6" />
+      <path d="M20 7 L23 21 L20 24 L17 21 Z" fill="var(--color-clay)" />
+      <circle cx="20" cy="20" r="2" fill="var(--color-ink)" />
     </svg>
   );
 }
@@ -30,8 +19,8 @@ export function Wordmark({ className = "" }: { className?: string }) {
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <LogoMark className="h-7 w-7" />
-      <span className="font-display text-[1.05rem] font-bold text-ink">
-        My Next Chapter
+      <span className="text-[1.15rem] font-extrabold tracking-[-0.03em] text-ink">
+        {BRAND.name}
       </span>
     </span>
   );
